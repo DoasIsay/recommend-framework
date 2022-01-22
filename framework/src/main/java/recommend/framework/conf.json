@@ -1,0 +1,58 @@
+{
+  //todo: 各类型算子配置单独一个配置文件
+  //一级算子，框架调度执行二级算子
+  "manager":  "begin,feature,recall,sort,adjust,resort,position,end",
+  //以下皆为二级算子，执行用户业务逻辑
+  //开始算子串行执行一些准备工作，后边算子会依赖前边算子的输出
+  "begin":    "GetToken,RequestToUserContext,ABExpParam",
+  //并行获取用户特征
+  "feature":  "SexFeature,SessionFeature,SimpleFeature",
+  //并行召回
+  "recall":   "SimpleRedis,PosRecall,SessionRecall",
+  //过滤
+  "filter":   "SimpleFilter,BizFilter",
+  //排序
+  "sort":     "PredictSort,SimpleSort",
+  //调权
+  "adjust":   "SimpleAdjust,ChnAdjust",
+  //重排
+  "resort":   "SimpleResort",
+  //占位，串行前面算子优先占位，后边算子继续占剩余的位
+  "position": "StrongPosition,ChnPosition,SimplePosition",
+  //返回请求结果
+  "end":      "EventToResponse,LogDump",
+
+  "feature": { //future并行算子的线程池大小及超时配置
+    "poolSize": 20,
+    "queueSize": 10000,
+    "timeout": 30
+  },
+  "SessionRecall": {
+    "class": "SessionRecall",
+    "open": 1,
+    "exceptNum": 100,
+    //圏用户
+    "express": "actDay<30 || version>8 || \"man\".equals(sex)",
+    //种子过滤规则
+    "seedExpress": "dr>10 && views>1 || likes>0 || pay>1"
+  },
+  "CoverFilter": {
+    "class": "SimpleFilter",
+    "open": 1,
+    //圏用户
+    "express": "highActive == true && \"ios\".equals(os) && offset<100"
+  },
+  "ChnAdjust": {
+    "open": 1,
+    "class": "ChnAdjust",
+    "chn": "SimpleRedis",
+    "weight": 5.5,
+    //圏用户
+    "express": "lowActive == true"
+  },
+  "ChnPosition" : {
+    "class": "ChnPosition",
+    "open": 1,
+    "chnPos": "SessionRecall:4,5,6"
+  }
+}
