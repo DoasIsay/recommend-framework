@@ -2,12 +2,13 @@ package recommend.framework;
 
 import recommend.framework.config.Config;
 
+//实验参数
 public class ExpParam {
     String ns;
     String type;
     String name;
-    Config exp;
-    Config def;
+    Config exp;//实验平台参数
+    Config def;//配置中的默认参数
 
     public ExpParam(String type, String name, Config exp, Config def) {
         this.type = type;

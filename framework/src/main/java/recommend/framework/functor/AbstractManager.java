@@ -1,6 +1,5 @@
 package recommend.framework.functor;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -8,6 +7,7 @@ import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.config.Config;
 import recommend.framework.rulengine.RuleEngineFactory;
+import recommend.framework.util.ThreadPoolHelper;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,18 +29,7 @@ public abstract class AbstractManager extends AbstractFunctor {
     public void open(Config config) {
         super.open(config);
         timeout = config.getValue("timeout", 60);
-        threadPool = threadPoolMap.computeIfAbsent(type, key -> new ThreadPoolExecutor(
-                config.getValue("poolSize", 10),
-                config.getValue("poolSize", 10),
-                10L,
-                TimeUnit.MINUTES,
-                new ArrayBlockingQueue<>(config.getValue("queueSize", 1000)),
-                new ThreadFactoryBuilder().setNameFormat(type+"-%d").build(),
-                new RejectedExecutionHandler() {
-                    public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
-                        log.warn("queue is full, drop this task, maybe should increase the size of executor {}", executor.toString());
-                    }
-                }));
+        threadPool = ThreadPoolHelper.get(getType() + getName(), 8, 64, 0);
     }
 
     public boolean strategyFilter(String name) {
