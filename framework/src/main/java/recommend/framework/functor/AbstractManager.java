@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import recommend.framework.Event;
 import recommend.framework.Item;
-import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 import recommend.framework.rulengine.RuleEngineFactory;
 import recommend.framework.util.ThreadPoolHelper;
 
@@ -26,21 +26,23 @@ public abstract class AbstractManager extends AbstractFunctor {
     public ThreadPoolExecutor threadPool;
 
     @Override
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         super.open(config);
         timeout = config.getValue("timeout", 60);
         threadPool = ThreadPoolHelper.get(getType() + getName(), 8, 64, 0);
     }
 
     public boolean strategyFilter(String name) {
+
         //实验参数开关
         String openParamName = type+"_"+name+ ".open";
         //简单规则表达式，比如圏用户
         String expressParamName = type+"_"+name + ".express";
 
-        boolean flag = Optional.ofNullable(expParam.getString(openParamName, "0"))
+        boolean flag = Optional.ofNullable(expParam)
+                .map(param -> param.getString(openParamName, "0"))
                 .map(open -> "1".equals(open) || "true".equals(open))
-                .orElse(false);
+                .orElse(true);
         //未命中实验
         if (!flag) return false;
 
@@ -58,7 +60,7 @@ public abstract class AbstractManager extends AbstractFunctor {
     }
 
     public List<Functor> getFunctors(boolean async) { //todo: filter并发初始化？无必要，一般从redis拉数据耗时在2ms左右，而最长的召回耗时在20-30ms
-        String functorNames = config.getString(type);
+        String functorNames = config.getFunctors();
         if (StringUtils.isEmpty(functorNames)) {
             log.warn("not find {} config", type);
             return Collections.emptyList();
@@ -66,10 +68,12 @@ public abstract class AbstractManager extends AbstractFunctor {
 
         List<Functor> functors = new ArrayList<>();
         for (String functorName : functorNames.split(",")) {
-            if (!strategyFilter(functorName)) continue;
+            //if (false) continue;
+
             Functor functor = FunctorFactory.get(functorName);
             if (functor != null) functors.add(functor);
         }
+        System.out.println(functors.size());
         return functors;
     }
 

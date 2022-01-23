@@ -5,9 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ExtInfo {
     //通用扩展字段基类
-    public Map<String, Object> info = new ConcurrentHashMap<>();
+    public Map<String, Object> config = new ConcurrentHashMap<>();
     public <T> void setValue(String name, T var) {
-        info.put(name, var);
+        config.put(name, var);
     }
 
     public <T> T getValue(String name) {
@@ -15,7 +15,7 @@ public class ExtInfo {
     }
 
     public <T> T getValue(String name, T defVar) {
-        return (T) info.getOrDefault(name, defVar);
+        return (T) config.getOrDefault(name, defVar);
     }
 
     public int getInt(String name) {

@@ -4,6 +4,7 @@ import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
 import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.AbstractRecall;
 import recommend.framework.functor.AbstractManager;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @Functor(name = "recall")
 public class RecallManager extends AbstractManager {
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         setType("recall");
         setMode(Mode.parallel);
         super.open(config);

@@ -7,6 +7,7 @@ import recommend.framework.Event;
 import recommend.framework.ExpParam;
 import recommend.framework.Item;
 import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,15 +22,16 @@ public abstract class AbstractFunctor implements Functor {
     public String expName;//实验参数前缀
     public ExpParam expParam;//实验参数包含config
     public Event event;//请求上下文
-    public Config config;//算子默认配置
+    public FunctorConfig config;//算子默认配置
     public Context context;//用户上下文
     public Map<String,Object> userFeatures;//用户特征
     public List<Item> items;//物料
     //MetricsReporter metricsReporter;//上报指标
 
     @Override
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         this.config = config;
+        this.name = config.getName();
         //metricsReporter = MetricsReporter.get(type);
         metricName = type + "/" + name;
         expName = type + "_" + name;
@@ -39,7 +41,7 @@ public abstract class AbstractFunctor implements Functor {
     public void init() {
         items = event.getItems() != null? event.getItems(): Collections.emptyList();
         context = event.getContext();
-        expParam = new ExpParam(type, name, new Config(context.getExpMap()), config);
+        //expParam = new ExpParam(type, name, new Config(context.getExpMap()), new Config(config.config));
         userFeatures = event.getUserFeatures() != null? event.getUserFeatures(): Collections.emptyMap();
     }
 
@@ -51,11 +53,13 @@ public abstract class AbstractFunctor implements Functor {
         try {
             init();
             Event tmp = doInvoke(event);
+
             //metricsReporter.metrics(startTime, tmp.getCode(), tmp.getSize(), getMetricName());
             return tmp;
         } catch (Exception e) {
             //metricsReporter.metrics(startTime, -1, 0, getMetricName());
             log.error("{} {} invoke error:", type, name);
+            e.printStackTrace();
         }
 
         return event;

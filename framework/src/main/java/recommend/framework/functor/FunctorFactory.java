@@ -1,21 +1,25 @@
 package recommend.framework.functor;
 
+
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import recommend.framework.Main;
 import recommend.framework.annotation.AnnotationHelper;
 import recommend.framework.config.Config;
-import recommend.framework.util.FileMonitor;
+import recommend.framework.config.FunctorConfig;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
+@Data
 @Slf4j
 public class FunctorFactory {
-    static volatile Map<String, Class<?>> classMap = AnnotationHelper.getAnnotationClass("functor.impl", Functor.class);
-    volatile Map<String, Config> nameConfigMap = Collections.emptyMap();
-
-    private FunctorFactory() {
-        new FileMonitor("lib/functor", (String path)->path.endsWith(".jar"), (File file)->reload(file));
+    public static volatile Map<String, Class<?>> classMap = AnnotationHelper.getAnnotationClass("recommend.framework.functor", recommend.framework.annotation.Functor.class);
+    volatile Map<String, FunctorConfig> name2Config = Collections.emptyMap();
+    public static Config config;
+    public FunctorFactory() {
+        //new FileMonitor("lib/functor", (String path)->path.endsWith(".jar"), (File file)->reload(file));
     }
 
     private static void reload(File file) {
@@ -35,15 +39,15 @@ public class FunctorFactory {
     }
 
     public Functor create(String name) {
-        Config config = nameConfigMap.get(name);
+        FunctorConfig config = Main.config.getName2Config().get(name);
         if (config == null) {
-            log.error("not find {} config", name);
+            log.error("functor config not found error: {}", name);
+            System.out.println("null "+name);
             return null;
         }
-        String className = config.getString("class");
-        Functor functor = AnnotationHelper.getInstance(className, classMap);
+
+        Functor functor = AnnotationHelper.getInstance(config.getFunctor(), classMap);
         functor.open(config);
-        functor.setName(name);
         return functor;
     }
 }

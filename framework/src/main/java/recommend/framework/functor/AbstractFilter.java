@@ -3,12 +3,13 @@ package recommend.framework.functor;
 import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 
 import java.util.stream.Collectors;
 
 public abstract class AbstractFilter extends AbstractFunctor {
     @Override
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         setType("filter");
         super.open(config);
     }

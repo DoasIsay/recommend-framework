@@ -4,13 +4,14 @@ import lombok.Data;
 import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 
 import java.util.stream.Collectors;
 
 @Data
 public abstract class AbstractAdjust extends AbstractFunctor {
     @Override
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         setType("adjust");
         super.open(config);
     }

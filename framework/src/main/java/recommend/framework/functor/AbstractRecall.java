@@ -3,7 +3,7 @@ package recommend.framework.functor;
 import lombok.Data;
 import recommend.framework.Event;
 import recommend.framework.Item;
-import recommend.framework.config.Config;
+import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.impl.manager.FilterManager;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public abstract class AbstractRecall extends AbstractFunctor {
     @Override
-    public void open(Config config) {
+    public void open(FunctorConfig config) {
         setType("recall");
         super.open(config);
     }
