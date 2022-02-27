@@ -26,7 +26,7 @@ public abstract class AbstractRecall extends AbstractFunctor {
         items.forEach(item -> item.setChn(getName()));
         event.setItems(items);
         //统一过滤
-        filterManager.invoke(event);
+        //filterManager.invoke(event);
         //召回截断
         int exceptNum = expParam.getValue("exceptNum", 100);
         event.setItems(event.getSize() > exceptNum? event.getItems().subList(0, exceptNum): event.getItems());

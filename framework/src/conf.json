@@ -1,31 +1,13 @@
 {
-  "config":{
-    "manager":"begin,feature,recall,filter,sort,adjust,resort,position,end",
-    "开始":"串行执行一些准备工作，后边算子会依赖前边算子的输出",
-    "begin":"GetToken,RequestToUserContext,ABExpParam",
-    "特征":"并行获取用户特征",
-    "feature":"SexFeature,SessionFeature,SimpleFeature",
-    "召回":"并行召回",
-    "recall":"SimpleRedis,PosRecall,SessionRecall",
-    "过滤":"串行执行过滤",
-    "filter":"SimpleFilter,BizFilter",
-    "排序":"",
-    "sort":"PredictSort,SimpleSort",
-    "调权":"",
-    "adjust":"SimpleAdjust,ChnAdjust",
-    "重排":"",
-    "resort":"SimpleResort",
-    "占位":"串行执行，前面算子优先占位，后边算子继续占剩余的位",
-    "position":"StrongPosition,ChnPosition,SimplePosition",
-    "结束":"返回请求结果，日志落盘",
-    "end":"EventToResponse,LogDump"
-  },
   "functors":[
+    {
+      "manager-comment":"manager配置"
+    },
     {
       "name":"MainManager",
       "functor":"Manager",
-      "管理":"管理算子，调度执行其它算子",
-      "functors":"BeginManager,FeatureManager,RecallManager,FilterManager,SortManager,AdjustManager,ResortManager,PositionManager",
+      "comment":"管理算子，调度执行其它算子",
+      "functors":"BeginManager,FeatureManager,RecallManager,FilterManager,SortManager,AdjustManager,ResortManager,PositionManager,EndManager",
       "config":{
         "open":1
       }
@@ -33,7 +15,7 @@
     {
       "name":"BeginManager",
       "functor":"Manager",
-      "开始":"串行执行一些准备工作，后边算子会依赖前边算子的输出",
+      "comment":"串行执行一些准备工作，后边算子会依赖前边算子的输出",
       "functors":"GetToken,RequestToUserContext,ABExpParam",
       "config":{
         "open":1
@@ -42,29 +24,28 @@
     {
       "name":"FeatureManager",
       "functor":"Manager",
-      "open":1,
-      "特征":"并行获取用户特征",
+      "comment":"并行获取用户特征",
       "functors":"SexFeature,SessionFeature,SimpleFeature",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"parallel"
       }
     },
     {
       "name":"RecallManager",
       "functor":"Manager",
-      "open":1,
-      "召回":"并行召回",
+      "comment":"并行召回",
       "functors":"SimpleRedis,PosRecall,SessionRecall",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"parallel"
       }
     },
     {
       "name":"FilterManager",
       "functor":"Manager",
-      "open":1,
-      "过滤":"串行执行过滤",
-      "functors":"SimpleFilter,BizFilter",
+      "comment":"串行执行过滤",
+      "functors":"BizFilter",
       "config":{
         "open":1
       }
@@ -72,19 +53,18 @@
     {
       "name":"SortManager",
       "functor":"Manager",
-      "open":1,
-      "排序":"",
-      "functors":"PredictSort,SimpleSort",
+      "comment":"排序",
+      "functors":"PredictSort",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"cutout"
       }
     },
     {
       "name":"AdjustManager",
       "functor":"Manager",
-      "open":1,
-      "调权":"",
-      "functors":"SimpleAdjust,ChnAdjust",
+      "comment":"调权",
+      "functors":"ChnAdjust1,ChnAdjust2",
       "config":{
         "open":1
       }
@@ -92,8 +72,7 @@
     {
       "name":"ResortManager",
       "functor":"Manager",
-      "open":1,
-      "重排":"",
+      "comment":"重排",
       "functors":"SimpleResort",
       "config":{
         "open":1
@@ -102,8 +81,7 @@
     {
       "name":"PositionManager",
       "functor":"Manager",
-      "open":1,
-      "占位":"串行执行，前面算子优先占位，后边算子继续占剩余的位",
+      "comment":"串行执行，前面算子优先占位，后边算子继续占剩余的位",
       "functors":"StrongPosition,ChnPosition,SimplePosition",
       "config":{
         "open":1
@@ -112,17 +90,18 @@
     {
       "name":"EndManager",
       "functor":"Manager",
-      "open":1,
-      "结束":"返回请求结果，日志落盘",
+      "comment":"返回请求结果，日志落盘",
       "functors":"EventToResponse,LogDump",
       "config":{
         "open":1
       }
     },
     {
+      "functor-comment":"functor 配置"
+    },
+    {
       "name":"SessionRecall",
       "functor":"SessionRecall",
-      "open":1,
       "exceptNum":100,
       "规则表达示":"种子过滤规则",
       "express":"actDay<30 || version>8 || \"man\".equals(sex)",
@@ -132,33 +111,118 @@
       }
     },
     {
+      "name":"GetToken",
+      "functor":"GetToken",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"RequestToUserContext",
+      "functor":"RequestToUserContext",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"ABExpParam",
+      "functor":"ABExpParam",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"SimpleFeature",
+      "functor":"SimpleFeature",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"SexFeature",
+      "functor":"SexFeature",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"SimpleRedis",
+      "functor":"SimpleRedis",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"SessionFeature",
+      "functor":"SessionFeature",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"PosRecall",
+      "functor":"PosRecall",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"SimpleFilter",
+      "functor":"SimpleFilter",
+      "config":{
+        "open":1
+      }
+    },
+    {
+      "name":"BizFilter",
+      "functor":"BizFilter",
+      "config":{
+        "open":1
+      }
+    },
+    {
       "name":"CoverFilter",
       "functor":"SimpleFilter",
-      "open":1,
-      "规则表达示":"圏用户",
+      "comment":"规则表达示圏用户",
       "express":"highActive == true && \"ios\".equals(os) && offset<100",
       "config":{
         "open":1
       }
     },
     {
-      "name":"ChnAdjust",
-      "open":1,
+      "name":"ChnAdjust1",
       "functor":"ChnAdjust",
       "config":{
         "chn":"SimpleRedis",
-        "weight":5.5,
-        "规则表达示":"圏用户",
+        "comment":"规则表达示圏用户",
+        "express":"lowActive == true"
+      }
+    },
+    {
+      "name":"ChnAdjust2",
+      "functor":"ChnAdjust",
+      "config":{
+        "chn":"SimpleRedis",
+        "comment":"规则表达示圏用户",
         "express":"lowActive == true"
       }
     },
     {
       "name":"ChnPosition",
       "functor":"ChnPosition",
-      "open":1,
       "config":{
         "chnPos":"SessionRecall:4,5,6"
       }
+    },
+    {
+      "name":"EventToResponse",
+      "functor":"EventToResponse",
+      "open":1
+    },
+    {
+      "name":"LogDump",
+      "functor":"LogDump",
+      "open":1
     }
   ]
 }

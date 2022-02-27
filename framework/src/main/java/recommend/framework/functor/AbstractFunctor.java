@@ -8,15 +8,17 @@ import recommend.framework.ExpParam;
 import recommend.framework.Item;
 import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
+import recommend.framework.metrics.impl.MetricsReporter;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @Slf4j
 public abstract class AbstractFunctor implements Functor {
-    public String type;//算子类型，begin,manager,recall,filter,sort,adjust,resort,position,end,
+    public String type = "functor";//算子类型，begin,manager,recall,filter,sort,adjust,resort,position,end,
     public String name;//算子名，SimpleRedis,SimpleFilter,SimpleAdjust,,
     public String metricName;//统计指标名
     public String expName;//实验参数前缀
@@ -26,13 +28,13 @@ public abstract class AbstractFunctor implements Functor {
     public Context context;//用户上下文
     public Map<String,Object> userFeatures;//用户特征
     public List<Item> items;//物料
-    //MetricsReporter metricsReporter;//上报指标
+    MetricsReporter metricsReporter;//上报指标
 
     @Override
     public void open(FunctorConfig config) {
         this.config = config;
         this.name = config.getName();
-        //metricsReporter = MetricsReporter.get(type);
+        metricsReporter = MetricsReporter.get(type);
         metricName = type + "/" + name;
         expName = type + "_" + name;
     }
@@ -41,7 +43,7 @@ public abstract class AbstractFunctor implements Functor {
     public void init() {
         items = event.getItems() != null? event.getItems(): Collections.emptyList();
         context = event.getContext();
-        //expParam = new ExpParam(type, name, new Config(context.getExpMap()), new Config(config.config));
+        expParam = new ExpParam(type, name, new Config(new HashMap<>()), new Config(config.config));
         userFeatures = event.getUserFeatures() != null? event.getUserFeatures(): Collections.emptyMap();
     }
 
@@ -49,19 +51,17 @@ public abstract class AbstractFunctor implements Functor {
     public Event invoke(Event event) {
         long startTime = System.currentTimeMillis();
         this.event = event != null? event: Event.EMPTY;
+        System.out.println(getType()+"-"+getName()+ " run");
 
         try {
             init();
             Event tmp = doInvoke(event);
-
-            //metricsReporter.metrics(startTime, tmp.getCode(), tmp.getSize(), getMetricName());
-            return tmp;
+            metricsReporter.metrics(startTime, tmp.getCode(), tmp.getSize(), getMetricName());
         } catch (Exception e) {
-            //metricsReporter.metrics(startTime, -1, 0, getMetricName());
+            metricsReporter.metrics(startTime, -1, 0, getMetricName());
             log.error("{} {} invoke error:", type, name);
             e.printStackTrace();
         }
-
         return event;
     }
 

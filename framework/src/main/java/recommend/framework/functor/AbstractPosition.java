@@ -35,7 +35,7 @@ public abstract class AbstractPosition extends AbstractFunctor{
 
     @Override
     public Event doInvoke(Event event) {
-        emptyList = getEmptyItems(context.getExpectNum());
+        emptyList = getEmptyItems(context.getSize());
         //运营强占位，产品高优先级预先占位
         arrange(getItems());
 

@@ -17,19 +17,23 @@ import java.util.concurrent.*;
 public abstract class AbstractManager extends AbstractFunctor {
     public enum Mode {
         serial,   //串行执行，比如过滤，调权算子串行
-        cutout,   //短路执行，遍历算子任何一个执行成功就结束，先出现的算子优先级高（占位算子有优先级），后边算子优先级低可做兜底（观星排序失败，快排兜底）
+        cutoff,   //短路执行，遍历算子任何一个执行成功就结束，先出现的算子优先级高（占位算子有优先级），后边算子优先级低可做兜底（观星排序失败，快排兜底）
         parallel  //并行执行，比如获取特征，多路召回算子是并行的
     }
-    Mode mode = Mode.serial;//manager管理的算子运行模式
+    String mode = Mode.serial.name();//manager管理的算子运行模式
     public int timeout;
     static Map<String, ThreadPoolExecutor> threadPoolMap = new ConcurrentHashMap<>();
     public ThreadPoolExecutor threadPool;
 
     @Override
     public void open(FunctorConfig config) {
+        setType("manager");
         super.open(config);
         timeout = config.getValue("timeout", 60);
-        threadPool = ThreadPoolHelper.get(getType() + getName(), 8, 64, 0);
+
+        mode = config.getString("mode", Mode.serial.name());
+
+        threadPool = ThreadPoolHelper.get(getType() + "-" + getName(), 8, 64, 0);
     }
 
     public boolean strategyFilter(String name) {
@@ -73,21 +77,28 @@ public abstract class AbstractManager extends AbstractFunctor {
             Functor functor = FunctorFactory.get(functorName);
             if (functor != null) functors.add(functor);
         }
-        System.out.println(functors.size());
         return functors;
     }
 
     @Override
     public Event doInvoke(Event event) {
-        switch (mode) {
-            case serial: return serialInvoke(event);
-            case cutout: return cutoutInvoke(event);
-            case parallel: return parallelInvoke(event);
-            default: throw new RuntimeException("not support mode: " + mode);
+        Mode tmpMode = Mode.serial;
+        try {
+            tmpMode = Mode.valueOf(mode);
+        } catch (Exception e) {
+            System.out.println("not support mode: " + mode);
+            log.warn("not support mode: {}, use default mode: serial", mode);
         }
+
+        switch (tmpMode) {
+            case serial: return doInvokeSerial(event);
+            case cutoff: return doInvokeCutOff(event);
+            case parallel: return doInvokeParallel(event);
+        }
+        return event;
     }
 
-    Event parallelInvoke(Event event) {
+    Event doInvokeParallel(Event event) {
         List<Callable<Event>> featureTasks = new ArrayList<>();
         getFunctors().forEach(functor -> featureTasks.add(()->functor.invoke(event)));
 
@@ -110,12 +121,12 @@ public abstract class AbstractManager extends AbstractFunctor {
         return event;
     }
 
-    Event serialInvoke(Event event) {
+    Event doInvokeSerial(Event event) {
         getFunctors().forEach(functor -> functor.invoke(event));
         return event;
     }
 
-    Event cutoutInvoke(Event event) {
+    Event doInvokeCutOff(Event event) {
         getFunctors().forEach(functor -> {
             functor.invoke(event);
             if (event.getCode() > 0) return;

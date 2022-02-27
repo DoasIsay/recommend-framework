@@ -52,22 +52,6 @@ public class AnnotationHelper {
         return classMap;
     }
 
-    public static <T> T getInstance(String name, String type, Map<String, Class<?>> map) {
-        return getInstance(name+"_"+type, map);
-    }
-
-    public static <T> T getInstance(String name, Map<String, Class<?>> map) {
-        Class<T> c = (Class<T>) map.get(name);
-        if (c == null)
-            throw new RuntimeException("not support: " + name);
-        try {
-            return (T) c.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("create instance fail: " + name);
-        }
-    }
-
     public static void main(String[] args) {
         getAnnotationClass("recommend.frame", Functor.class);
     }

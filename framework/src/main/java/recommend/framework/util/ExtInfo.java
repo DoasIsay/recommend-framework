@@ -27,7 +27,5 @@ public class ExtInfo {
     public float getFloat(String key) { return getFloat(key, 0);}
     public float getFloat(String key, float defVar) { return getValue(key, defVar); }
     public String getString(String name) { return getValue(name, ""); }
-    public String getString(String key, String defVar) {
-        return getValue(key, defVar);
-    }
+    public String getString(String key, String defVar) { return getValue(key, defVar); }
 }

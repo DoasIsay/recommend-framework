@@ -13,7 +13,6 @@ public class SimpleFeature extends AbstractFeature {
             put("offset",   context.getOffset());
             put("version",  context.getVersion());
             put("city",     context.getCity());
-            put("actDay",   context.getActDay());
             put("os",       context.getOs());
         }};
     }

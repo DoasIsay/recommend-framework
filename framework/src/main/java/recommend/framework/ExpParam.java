@@ -24,7 +24,7 @@ public class ExpParam {
 
     public <T> T getValue(String key, T defVar) {
         //优先从实验平台拿参数，拿不到使用配置的默认参数
-        return exp.getValue(getKey(key), def.getValue(key, defVar));
+        return (T) exp.getValue(getKey(key), def.getValue(key, defVar));
     }
 
     public int getInt(String name) {

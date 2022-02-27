@@ -1,12 +1,14 @@
 package recommend.framework.functor.impl.position;
 
 import recommend.framework.Item;
+import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractPosition;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Functor(name = "StrongPosition")
 public class StrongPosition extends AbstractPosition {
     //运营强占位，由PosRecall从接口获取占位及主播信息
     @Override

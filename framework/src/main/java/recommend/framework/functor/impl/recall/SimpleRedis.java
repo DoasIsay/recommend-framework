@@ -23,6 +23,8 @@ public class SimpleRedis extends AbstractRecall {
 
     @Override
     public List<Item> recall() {
+        return Collections.emptyList();
+        /*
         return Optional.ofNullable(jedis)
                 .map(redis -> redis.get(expParam.getString("prefix", null)+"_"+context.getHdid()))
                 .map(str -> Arrays.stream(str.split(","))
@@ -35,5 +37,8 @@ public class SimpleRedis extends AbstractRecall {
                         }).filter(item -> item != null)
                         .collect(Collectors.toList())
                 ).orElse(Collections.emptyList());
+                 */
     }
+
+
 }

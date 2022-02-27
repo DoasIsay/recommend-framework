@@ -26,7 +26,11 @@ public class Event extends ExtInfo {
         this.items = items;
         if (items == null) code = -1;
         size = items.size();
-        code = size==0? 0: 1;
+        code = size == 0 ? 0 : 1;
+    }
+
+    public <T> void setUserFeature(Class c, T var) {
+        setUserFeature(c.getSimpleName(), var);
     }
 
     public <T> void setUserFeature(String name, T var) {
@@ -34,6 +38,10 @@ public class Event extends ExtInfo {
             userFeatures.putAll((Map) var);
         }
         userFeatures.put(name, var);
+    }
+
+    public <T> T getUserFeature(Class c, T defVar) {
+        return getUserFeature(c.getSimpleName(), defVar);
     }
 
     public <T> T getUserFeature(String name, T defVar) {

@@ -31,12 +31,13 @@ public class StringHelper extends org.apache.commons.lang.StringUtils {
     }
 
     public static <K,V> Map<K, V> toMap(String str, String itemSeparator, String kvSeparator, Function<String,K> kFun, Function<String,V> vFun) {
+        if (StringUtils.isEmpty(str)) return Collections.emptyMap();
         return Optional.ofNullable(str).map(s->Arrays.stream(s.split(itemSeparator)).filter(item->item.contains(kvSeparator)).map(kv->kv.split(kvSeparator)).map(fields->new Pair<>(kFun.apply(fields[0]),vFun.apply(fields[1]))).collect(java.util.stream.Collectors.toMap(Pair::getKey,Pair::getValue))).orElse(java.util.Collections.emptyMap());
     }
     public static void main(String[] argv) {
         System.out.println(toSet("1,2,3,4"));
         System.out.println(toMap("1:2,3:4"));
         System.out.println(toList("1,2,3,4"));
-        System.out.println(toMap("1:2,3,4;3:4,5,6", ";", ":", (k)->NumberUtils.toInt(k,0), (v)->StringHelper.toList(v)));
+        System.out.println(toMap("1:2,3,4;3:4,5,6", ";", ":", k->(k), (v)->StringHelper.toList(v)));
     }
 }

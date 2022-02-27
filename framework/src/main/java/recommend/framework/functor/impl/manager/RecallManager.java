@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class RecallManager extends AbstractManager {
     public void open(FunctorConfig config) {
         setType("recall");
-        setMode(Mode.parallel);
         super.open(config);
     }
 
@@ -43,7 +42,7 @@ public class RecallManager extends AbstractManager {
             e.printStackTrace();
             event.setCode(-1);
         }
-        return event;
+       return event;
     }
 }
 

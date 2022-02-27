@@ -11,7 +11,6 @@ public class FilterManager extends AbstractManager {
     List<recommend.framework.functor.Functor> filterFunctors;
     public void open(FunctorConfig config) {
         setType("filter");
-        setMode(Mode.serial);
         super.open(config);
         filterFunctors = getFunctors();
     }

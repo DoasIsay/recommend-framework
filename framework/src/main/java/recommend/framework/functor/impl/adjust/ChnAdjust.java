@@ -17,7 +17,7 @@ public class ChnAdjust extends AbstractAdjust {
         super.init();
         //对指定的召回通道召回主播进行调权
         chn = StringHelper.toSet(expParam.getValue("chn", ""));
-        weight = expParam.getValue("weight", 5.5f);
+        weight = expParam.getFloat("weight", 5.5f);
     }
 
     @Override
