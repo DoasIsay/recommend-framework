@@ -1,51 +1,114 @@
 package recommend.framework.config;
 
-import com.alibaba.fastjson.JSON;
-import com.ctrip.framework.apollo.ConfigFile;
-import com.ctrip.framework.apollo.ConfigService;
-import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.model.ConfigFileChangeEvent;
-import com.google.gson.Gson;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import recommend.framework.util.ExtInfo;
-import recommend.framework.util.GsonHelper;
 
-import java.util.HashMap;
+/**
+ * @author xiewenwu
+ * @date 2022/5/1 16:47
+ */
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import recommend.framework.util.JsonHelper;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Getter
-@Slf4j
-public class Config extends ExtInfo {
-    private static ConfigFile configFile = ConfigService.getConfigFile("config", ConfigFileFormat.JSON);
-    private Map<String, FunctorConfig> name2Config = new HashMap<>();
-    List<FunctorConfig> functors;
+public class Config {
+    private JSONObject config;
 
     public Config() {
-        //configFile.addChangeListener((event -> reload(event)));
     }
 
-    public Config(Map<String, Object> map) {
-        config.putAll(map);
+    public Config(JSONObject config) {
+        this.config = config;
     }
 
-    public void reload(ConfigFileChangeEvent event) {
-        Config config;
-        if (event != null) {
-            config = new Gson().fromJson(configFile.getContent(), Config.class);
-            log.info("config {} change old {} new {}, now reload", event.getNamespace(), event.getOldValue(), event.getNewValue());
-        } else {
-            config = GsonHelper.get("framework/src/conf.json", Config.class);
+    public Config(String path) {
+        config = JsonHelper.fromFile(path);
+    }
+
+    public Config(Map<String, Object> config) {
+        this.config = new JSONObject(config);
+    }
+
+    public Config getConfig(String name) {
+        return new Config(getValue(name, new JSONObject()));
+    }
+
+    public Map<String, Object> getConfig() {
+        return config.getInnerMap();
+    }
+
+    public <T> void setValue(String name, T var) {
+        config.put(name, var);
+    }
+
+    public <T> T getValue(String name) {
+        return getValue(name, null);
+    }
+
+    public <T> T getValue(String name, T defVar) {
+        return (T) config.getOrDefault(name, defVar);
+    }
+
+    public int getInt(String name) {
+        return getValue(name, 0);
+    }
+
+    public int getInt(String key, int defVar) {
+        return getValue(key, defVar);
+    }
+
+    public float getFloat(String key) {
+        return getFloat(key, 0);
+    }
+
+    public float getFloat(String key, float defVar) {
+        return getValue(key, defVar);
+    }
+
+    public String getString(String name) {
+        return getValue(name, "");
+    }
+
+    public String getString(String key, String defVar) {
+        return getValue(key, defVar);
+    }
+
+    public <T> List<T> getList(String key, Class<T> classType) {
+        return getList(key, classType, null);
+    }
+
+    public List<Config> getConfigs(String key) {
+        return getConfigs(key, null);
+    }
+
+    public List<Config> getConfigs(String key, List<Config> defVar) {
+        return Optional.ofNullable(getList(key, JSONObject.class))
+                .map(jsonObjects -> jsonObjects.stream().map(Config::new).collect(Collectors.toList()))
+                .orElse(defVar);
+    }
+
+    public <T> List<T> getList(String key, Class<T> classType, List<T> defVar) {
+        Object obj = config.get(key);
+        if (obj == null) {
+            return defVar;
         }
-        functors = config.getFunctors();
-        name2Config = functors.stream().filter(functorConfig -> StringUtils.isNotEmpty(functorConfig.getName())).collect(Collectors.toMap(FunctorConfig::getName, v -> v));
-        System.out.println(JSON.toJSONString(name2Config));
-    }
 
+        if (obj instanceof JSONArray) {
+            return ((JSONArray) obj).toJavaList(classType);
+        } else if (obj instanceof List) {
+            return (List<T>) obj;
+        } else {
+            return defVar;
+        }
+    }
     public static void main(String[] argv) {
-        GsonHelper.get("framework/src/conf.json", Config.class);
+        Config config = new Config("framework/src/conf.json");
+        List<CacheConfig> list = config.getList("conf", CacheConfig.class);
+        System.out.println(list.get(0).getDelay());
     }
 }
+
