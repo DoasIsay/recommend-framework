@@ -8,8 +8,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 import recommend.framework.Context;
 import recommend.framework.Event;
-import recommend.framework.config.Config;
-import recommend.framework.config.ConfigManager;
 import recommend.framework.util.KafkaHelper;
 
 /**
