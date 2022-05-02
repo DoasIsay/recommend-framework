@@ -1,0 +1,28 @@
+{
+  "conf": [
+    {
+      "name": "online",
+      "type": "OnlineAnchorCache",
+      "period": 1,
+      "delay": 1,
+      "config": {
+        "url": "http://api.3g.yy.com/online/allList"
+      }
+    },
+    {
+      "name": "dating",
+      "type": "OnlineAnchorCache",
+      "period": 1,
+      "delay": 1,
+      "config": {
+        "url": "http://api.3g.yy.com/online/dating"
+      }
+    },
+    {
+      "name": "timeoutOnlineDating",
+      "type": "TimeoutAllAnchorCache",
+      "period": 1,
+      "delay": 1
+    }
+  ]
+}
