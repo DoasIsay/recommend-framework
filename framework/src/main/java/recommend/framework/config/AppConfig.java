@@ -5,6 +5,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ctrip.framework.apollo.ConfigFile;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import lombok.Data;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import recommend.framework.util.JsonHelper;
@@ -31,7 +32,7 @@ public class AppConfig extends Config {
         } else {
             appConfig = JsonHelper.fromFile("framework/src/conf.json", AppConfig.class);
         }
-
+        System.out.println(appConfig);
         functors = appConfig.getFunctors();
         name2Config = functors.stream().filter(functorConfig -> StringUtils.isNotEmpty(functorConfig.getName())).collect(Collectors.toMap(FunctorConfig::getName, v -> v));
         System.out.println(JSON.toJSONString(name2Config, SerializerFeature.PrettyFormat));

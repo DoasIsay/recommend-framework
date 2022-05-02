@@ -65,7 +65,7 @@ public class JsonHelper {
             return JSONObject.parseObject(sb.toString());
         } catch (Exception e) {
             log.error("json parse {} error: {}", sb.toString(), e);
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return null;
