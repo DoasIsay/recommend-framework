@@ -3,7 +3,6 @@ package recommend.framework.functor;
 import lombok.Data;
 import recommend.framework.Event;
 import recommend.framework.Item;
-import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 
 import java.util.stream.Collectors;

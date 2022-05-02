@@ -1,15 +1,17 @@
 package recommend.framework;
 
-import recommend.framework.config.Config;
+import recommend.framework.config.AppConfig;
 import recommend.framework.functor.FunctorFactory;
 import recommend.framework.functor.impl.manager.Manager;
 
 public class Main {
-    public static Config config = new Config();
+    public static AppConfig appConfig = new AppConfig();
 
     public static void main(String[] argv) {
-        config.reload(null);
-        FunctorFactory.setName2Config(config.getName2Config());
-        new Manager(config.getName2Config().get("MainManager")).invoke(new Event());
+        appConfig.load(null);
+        FunctorFactory.setName2Config(appConfig.getName2Config());
+
+        new Manager(appConfig.getName2Config().get("MainManager")).invoke(new Event());
+        return;
     }
 }

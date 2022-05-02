@@ -1,6 +1,5 @@
 package recommend.framework.functor.impl.manager;
 
-import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.AbstractManager;
 

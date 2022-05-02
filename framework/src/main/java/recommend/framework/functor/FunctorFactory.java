@@ -3,7 +3,7 @@ package recommend.framework.functor;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import recommend.framework.annotation.AnnotationHelper;
+import recommend.framework.util.AnnotationHelper;
 import recommend.framework.config.FunctorConfig;
 
 import java.io.File;
@@ -37,8 +37,8 @@ public class FunctorFactory {
     public static Functor create(String name) {
         FunctorConfig functorConfig = name2Config.get(name);
         if (functorConfig == null) {
-            log.error("functor config not found error: {}", name);
-            System.out.println("functor config not found error: " + name);
+            log.error("functor appConfig not found error: {}", name);
+            System.out.println("functor appConfig not found error: " + name);
             return null;
         }
         Class c = name2Class.get(functorConfig.getFunctor());

@@ -37,26 +37,21 @@ public abstract class AbstractManager extends AbstractFunctor {
     }
 
     public boolean strategyFilter(String name) {
-
         //实验参数开关
-        String openParamName = type+"_"+name+ ".open";
-        //简单规则表达式，比如圏用户
-        String expressParamName = type+"_"+name + ".express";
-
         boolean flag = Optional.ofNullable(expParam)
-                .map(param -> param.getString(openParamName, "0"))
-                .map(open -> "1".equals(open) || "true".equals(open))
-                .orElse(true);
+                .map(param -> param.getInt("open", 0))
+                .map(open -> 1 == open)
+                .orElse(false);
         //未命中实验
         if (!flag) return false;
 
         if (userFeatures == null || userFeatures.isEmpty())
-            return true;
+            return false;
         //通过用户相关属性来判断是否开启此策略，比如，信息流用户，新户，高活，，
-        return (Boolean) Optional.ofNullable(expParam.getString(expressParamName, ""))
+        return (Boolean) Optional.ofNullable(expParam.getString("express", ""))//简单规则表达式，比如圏用户
                 .filter(StringUtils::isNotEmpty)
                 .map(expressStr -> RuleEngineFactory.get(expParam.getString("ruleEngine", "aviator")).execute(expressStr, userFeatures))
-                .orElse(true);
+                .orElse(false);
     }
 
     public List<Functor> getFunctors() {
@@ -66,13 +61,13 @@ public abstract class AbstractManager extends AbstractFunctor {
     public List<Functor> getFunctors(boolean async) { //todo: filter并发初始化？无必要，一般从redis拉数据耗时在2ms左右，而最长的召回耗时在20-30ms
         String functorNames = config.getFunctors();
         if (StringUtils.isEmpty(functorNames)) {
-            log.warn("not find {} config", type);
+            log.warn("not find {} appConfig", type);
             return Collections.emptyList();
         }
 
         List<Functor> functors = new ArrayList<>();
         for (String functorName : functorNames.split(",")) {
-            //if (false) continue;
+            if (strategyFilter(functorName)) continue;
 
             Functor functor = FunctorFactory.get(functorName);
             if (functor != null) functors.add(functor);

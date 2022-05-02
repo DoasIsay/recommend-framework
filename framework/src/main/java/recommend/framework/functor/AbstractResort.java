@@ -2,7 +2,6 @@ package recommend.framework.functor;
 
 import recommend.framework.Event;
 import recommend.framework.Item;
-import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 
 import java.util.List;

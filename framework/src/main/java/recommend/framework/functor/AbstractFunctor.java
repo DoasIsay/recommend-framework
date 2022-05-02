@@ -21,7 +21,6 @@ public abstract class AbstractFunctor implements Functor {
     public String type = "functor";//算子类型，begin,manager,recall,filter,sort,adjust,resort,position,end,
     public String name;//算子名，SimpleRedis,SimpleFilter,SimpleAdjust,,
     public String metricName;//统计指标名
-    public String expName;//实验参数前缀
     public ExpParam expParam;//实验参数包含config
     public Event event;//请求上下文
     public FunctorConfig config;//算子默认配置
@@ -36,7 +35,6 @@ public abstract class AbstractFunctor implements Functor {
         this.name = config.getName();
         metricsReporter = MetricsReporter.get(type);
         metricName = type + "/" + name;
-        expName = type + "_" + name;
     }
 
     @Override

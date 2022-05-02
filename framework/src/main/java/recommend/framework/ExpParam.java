@@ -1,5 +1,6 @@
 package recommend.framework;
 
+import recommend.framework.config.AppConfig;
 import recommend.framework.config.Config;
 
 //实验参数

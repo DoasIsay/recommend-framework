@@ -57,7 +57,7 @@
       "functors":"PredictSort",
       "config":{
         "open":1,
-        "mode":"cutout"
+        "mode":"cutoff"
       }
     },
     {
@@ -75,7 +75,8 @@
       "comment":"重排",
       "functors":"SimpleResort",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"cutoff"
       }
     },
     {
@@ -84,7 +85,8 @@
       "comment":"串行执行，前面算子优先占位，后边算子继续占剩余的位",
       "functors":"StrongPosition,ChnPosition,SimplePosition",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"cutoff"
       }
     },
     {
@@ -93,7 +95,8 @@
       "comment":"返回请求结果，日志落盘",
       "functors":"EventToResponse,LogDump",
       "config":{
-        "open":1
+        "open":1,
+        "mode":"parallel"
       }
     },
     {

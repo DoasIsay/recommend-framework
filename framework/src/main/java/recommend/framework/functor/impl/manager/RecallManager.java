@@ -3,7 +3,6 @@ package recommend.framework.functor.impl.manager;
 import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
-import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.AbstractRecall;
 import recommend.framework.functor.AbstractManager;
