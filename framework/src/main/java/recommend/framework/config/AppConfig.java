@@ -22,7 +22,7 @@ public class AppConfig extends Config {
     private volatile List<FunctorConfig> functors;
 
     public AppConfig() {
-        ConfigManager.register("appConfig", ConfigFileFormat.JSON, this::load);
+        //ConfigManager.register("appConfig", ConfigFileFormat.JSON, this::load);
     }
 
     public Config load(ConfigFile configFile) {

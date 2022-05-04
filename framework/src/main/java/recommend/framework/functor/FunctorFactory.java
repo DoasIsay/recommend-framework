@@ -1,31 +1,69 @@
 package recommend.framework.functor;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.ctrip.framework.apollo.ConfigFile;
+import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import recommend.framework.config.AppConfig;
+import recommend.framework.config.Config;
+import recommend.framework.config.ConfigManager;
 import recommend.framework.util.AnnotationHelper;
 import recommend.framework.config.FunctorConfig;
+import recommend.framework.util.FileMonitor;
+import recommend.framework.util.JarHelper;
+import recommend.framework.util.JsonHelper;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class FunctorFactory {
-    public static volatile Map<String, Class<?>> name2Class = AnnotationHelper.getAnnotationClass("recommend.framework.functor", recommend.framework.annotation.Functor.class);
-    @Setter
+    static volatile Map<String, Class<?>> name2Class = AnnotationHelper.getAnnotationClass("recommend.framework.functor", recommend.framework.annotation.Functor.class);
+
+    @Getter
     static volatile Map<String, FunctorConfig> name2Config = Collections.emptyMap();
 
-    public FunctorFactory() {
-        //new FileMonitor("lib/functor", (String path)->path.endsWith(".jar"), (File file)->reload(file));
+    static volatile List<FunctorConfig> functors;
+
+    static {
+        ConfigManager.register("functor", ConfigFileFormat.JSON, FunctorFactory::load);
+        new FileMonitor("F:\\xiewenwu\\recommend-framework\\target\\", (String path)->path.endsWith(".jar"), (File file)->load(file));
     }
 
-    private static void reload(File file) {
+    public FunctorFactory() {
+
+    }
+
+    public static Config load(ConfigFile configFile) {
+        Config config;
+        if (configFile != null) {
+            config = new Config(JsonHelper.fromString(configFile.getContent()));
+        } else {
+            config = new Config("framework/src/conf.json");
+        }
+
+        System.out.println(config);
+        functors = config.getList("functors", FunctorConfig.class);
+        name2Config = functors.stream().filter(functorConfig -> StringUtils.isNotEmpty(functorConfig.getName())).collect(Collectors.toMap(FunctorConfig::getName, v -> v));
+        System.out.println(JSON.toJSONString(name2Config, SerializerFeature.PrettyFormat));
+        log.info(JSON.toJSONString(name2Config, SerializerFeature.PrettyFormat));
+        return config;
+    }
+
+
+    private static void load(File file) {
         try {
-            ClassLoader.getSystemClassLoader().loadClass(file.getAbsolutePath());
-            Map<String, Class<?>> tmp = AnnotationHelper.getAnnotationClass("functor.impl", Functor.class);
+            Map<String, Class<?>> tmp = JarHelper.loadJAR(file.getAbsolutePath(), "recommend", recommend.framework.annotation.Functor.class);
             name2Class = tmp;
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

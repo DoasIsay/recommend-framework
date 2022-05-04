@@ -3,6 +3,8 @@ package recommend.framework.util;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import recommend.framework.Factory;
+import recommend.framework.functor.FunctorFactory;
 
 import java.io.File;
 import java.io.FileFilter;
