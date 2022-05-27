@@ -6,7 +6,7 @@
       "period": 1,
       "delay": 1,
       "config": {
-        "url": "http://api.3g.yy.com/online/allList"
+        "url": "http://test.com/list/online"
       }
     },
     {
@@ -15,7 +15,7 @@
       "period": 1,
       "delay": 1,
       "config": {
-        "url": "http://api.3g.yy.com/online/dating"
+        "url": "http://test.com/list/dating"
       }
     },
     {
