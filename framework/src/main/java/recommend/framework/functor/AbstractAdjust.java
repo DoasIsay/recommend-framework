@@ -1,5 +1,9 @@
 package recommend.framework.functor;
 
+/**
+ * @author xiewenwu
+ */
+
 import lombok.Data;
 import recommend.framework.Event;
 import recommend.framework.Item;
@@ -11,14 +15,14 @@ import java.util.stream.Collectors;
 public abstract class AbstractAdjust extends AbstractFunctor {
     @Override
     public void open(FunctorConfig config) {
-        setType("adjust");
+        setType(Type.adjust);
         super.open(config);
     }
 
     public abstract Item adjust(Item item);
 
     @Override
-    public Event doInvoke(Event event) {
+    public int doInvoke(Event event) {
         event.setItems(getItems().stream().map(item -> {
             float score = item.getScore();
             Item tmp = adjust(item);
@@ -28,6 +32,6 @@ public abstract class AbstractAdjust extends AbstractFunctor {
             }
             return tmp;
         }).collect(Collectors.toList()));
-        return event;
+        return 0;
     }
 }

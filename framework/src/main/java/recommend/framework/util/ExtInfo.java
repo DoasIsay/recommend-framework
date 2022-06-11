@@ -1,11 +1,17 @@
 package recommend.framework.util;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author xiewenwu
+ * 通用扩展字段基类
+ */
 public class ExtInfo {
-    //通用扩展字段基类
-    public Map<String, Object> config = new ConcurrentHashMap<>();
+    @Getter
+    public Map<String, Object> config = new HashMap<>();
     public <T> void setValue(String name, T var) {
         config.put(name, var);
     }

@@ -11,9 +11,40 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author xiewenwu
+ */
 @Slf4j
 public class AnnotationHelper {
     public static Set<String> annotationClass = new HashSet<>();
+
+    public static String getAnnotationType(Class target, Class ann) {
+        return getAnnotationValue(target, ann, "type");
+    }
+
+    public static String getAnnotationName(Class target, Class ann) {
+        String name = getAnnotationValue(target, ann, "name");
+        if (name != null && name.isEmpty()) {
+            return target.getSimpleName();
+        }
+
+        return name;
+    }
+
+    public static <T> T getAnnotationValue(Class target, Class ann, String field) {
+        try {
+            Annotation annotation = target.getDeclaredAnnotation(ann);
+            if (annotation == null) {
+                return null;
+            }
+            Method method = ann.getMethod(field);
+            return (T) method.invoke(annotation);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public static Map<String, Class<?>> getAnnotationClass(Class c, String ...paths) {
         Map<String, Class<?>> classMap = new HashMap<>();
@@ -23,21 +54,17 @@ public class AnnotationHelper {
         return classMap;
     }
 
-    public static Map<String, Class<?>> getAnnotationClass(String path, Class c) {
+    public static Map<String, Class<?>> getAnnotationClass(String path, Class ann) {
         Reflections reflections = new Reflections(path);
-        Set<Class<?>> classSet = reflections.getTypesAnnotatedWith(c);
+        Set<Class<?>> classSet = reflections.getTypesAnnotatedWith(ann);
 
         Map<String, Class<?>> classMap = new HashMap<>();
         classSet.forEach(classType -> {
-            try {
-                Method typeMethod = c.getMethod("type");
-                Method nameMethod = c.getMethod("name");
-                Annotation annotation = classType.getDeclaredAnnotation(c);
-                String name = (String) nameMethod.invoke(annotation);
-                String type = (String) typeMethod.invoke(annotation);
-                if (name.isEmpty())
-                    name = classType.getSimpleName();
-                //name = getName(classType, name);无需考虑不同type算子重名问题，强制各类算子命名带上类型，如SimpleRecall,SimpleFilter,SimpleAdjust
+                String name = getAnnotationName(classType, ann);
+                if (name == null) {
+                    return;
+                }
+                //String type = getAnnotationType(classType, ann);无需考虑不同type算子重名问题，强制各类算子命名带上类型，如SimpleRecall,SimpleFilter,SimpleAdjust
                 System.out.println(path + " get annotation: " + name + "\tclassType: " + classType.getName());
                 Class tmp = classMap.get(name);
                 if (tmp != null) {
@@ -45,9 +72,6 @@ public class AnnotationHelper {
                     System.exit(-1);
                 }
                 classMap.put(name, classType);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         });
         annotationClass.addAll(classMap.keySet());
         return classMap;

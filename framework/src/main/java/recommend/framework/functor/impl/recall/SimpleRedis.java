@@ -1,29 +1,26 @@
 package recommend.framework.functor.impl.recall;
 
-import org.apache.commons.lang.math.NumberUtils;
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractRecall;
-import redis.clients.jedis.Jedis;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Functor(name = "SimpleRedis")
 public class SimpleRedis extends AbstractRecall {
-    Jedis jedis;
-    @Override
-    public void init() {
-        super.init();
-        jedis = new Jedis();
-    }
-
     @Override
     public List<Item> recall() {
-        return Collections.emptyList();
+        return new ArrayList<Item>(){{
+            add(new Item("465456", 1f));
+            add(new Item("46547", 2f));
+            add(new Item("46548", 3f));
+            add(new Item("46549", 4f));
+        }};
         /*
         return Optional.ofNullable(jedis)
                 .map(redis -> redis.get(expParam.getString("prefix", null)+"_"+context.getHdid()))
@@ -39,6 +36,4 @@ public class SimpleRedis extends AbstractRecall {
                 ).orElse(Collections.emptyList());
                  */
     }
-
-
 }

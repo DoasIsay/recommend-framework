@@ -1,13 +1,13 @@
 package recommend.framework.functor.impl.sort;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.Item;
 import recommend.framework.functor.AbstractSort;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PredictSort extends AbstractSort {
     @Override

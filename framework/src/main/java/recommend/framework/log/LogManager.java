@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author xiewenwu
- * @date 2022/5/2 13:09
  */
 public class LogManager {
     static final ThreadPoolExecutor threadPool = ThreadPoolHelper.get("LogDumper", 1, 4, 0);

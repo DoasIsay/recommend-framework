@@ -4,6 +4,9 @@ import recommend.framework.metrics.Metrics;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author xiewenwu
+ */
 public class MetricsReporter implements Metrics {
     private static final ConcurrentHashMap<String, MetricsReporter> metricsReporterMap = new ConcurrentHashMap<>();
 

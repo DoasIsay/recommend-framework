@@ -2,7 +2,6 @@ package recommend.framework.cache;
 
 /**
  * @author xiewenwu
- * @date 2022/4/7 18:11
  */
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;

@@ -2,7 +2,6 @@ package recommend.framework.config;
 
 /**
  * @author xiewenwu
- * @date 2022/4/7 18:09
  */
 
 import lombok.Getter;

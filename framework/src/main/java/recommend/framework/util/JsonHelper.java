@@ -8,6 +8,9 @@ import org.yaml.snakeyaml.representer.Representer;
 import java.io.*;
 import java.util.Optional;
 
+/**
+ * @author xiewenwu
+ */
 @Slf4j
 public class JsonHelper {
     static public <T> T fromFile(String path, Class<T> c) {

@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
 
+/**
+ * @author xiewenwu
+ */
 @Slf4j
 public class ThreadPoolHelper {
     public static ThreadPoolExecutor get(String name, int min, int max, int queueSize) {
@@ -18,11 +21,12 @@ public class ThreadPoolHelper {
         return new ThreadPoolExecutor(
                 min,
                 max,
-                10l,
+                10L,
                 TimeUnit.MINUTES,
                 queue,
                 new ThreadFactoryBuilder().setNameFormat("pool-" +name + "-" + "-%d").build(),
                 new RejectedExecutionHandler() {
+                    @Override
                     public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
                         runnable.run();
                         log.warn("queue is full, maybe should increase the size of executor {}", executor.toString());

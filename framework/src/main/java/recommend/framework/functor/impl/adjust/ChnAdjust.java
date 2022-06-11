@@ -1,5 +1,9 @@
 package recommend.framework.functor.impl.adjust;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractAdjust;

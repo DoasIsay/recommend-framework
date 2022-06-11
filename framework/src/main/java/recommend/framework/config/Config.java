@@ -1,21 +1,23 @@
 package recommend.framework.config;
 
-
 /**
  * @author xiewenwu
- * @date 2022/5/1 16:47
  */
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.Data;
 import recommend.framework.util.JsonHelper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Data
 public class Config {
+    public static final Config EMPTY = new Config(Collections.emptyMap());
     private JSONObject config;
 
     public Config() {

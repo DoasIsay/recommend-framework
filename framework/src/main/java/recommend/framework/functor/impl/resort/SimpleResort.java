@@ -1,5 +1,9 @@
 package recommend.framework.functor.impl.resort;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractResort;

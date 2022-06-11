@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author xiewenwu
- * @date 2022/5/2 13:58
  */
 public class KafkaHelper {
     static {

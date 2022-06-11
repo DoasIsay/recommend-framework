@@ -1,117 +1,105 @@
 package recommend.framework.util;
 
-import recommend.framework.MyClassLoader;
+import org.apache.commons.io.FileUtils;
+import recommend.framework.Event;
 import recommend.framework.annotation.Functor;
+import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.impl.sort.SimpleSort;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * @author xiewenwu
- * @date 2022/5/4 18:15
  */
 public class JarHelper {
-    static public Class loadJAR(String jarPath, String className) {
-        File jarFile = new File(jarPath);
-        if (!jarFile.exists()) {
-            return null;
-        }
-
-        Class cls = null;
-        try {
-            URL url = jarFile.toURI().toURL();
-            URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, new MyClassLoader());
-            cls = classLoader.loadClass(className);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return cls;
-    }
-
-    static public Map<String, Class<?>> loadJAR(String jarFilePath, String packagePath, Class c) {
-        System.out.println(jarFilePath);
-        File jarFile = new File(jarFilePath);
-        if (!jarFile.exists()) {
-            return null;
-        }
-
+    static public Map<String, Class<?>> loadJAR(String jarFilePath, Class ann) {
+        URL url = null;
         List<String> classNames = null;
         try {
-            classNames = getJarFiles(jarFilePath, packagePath);
+            url = new URL(jarFilePath);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        try(JarFile jarFile = getJarFile(url)) {
+            classNames = getClassName(jarFile);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
 
         Map<String, Class<?>> classMap = new HashMap<>();
-        try {
-            URL url = jarFile.toURI().toURL();
-            URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, new MyClassLoader());
-            for (String className : classNames) {
-                Class classType = classLoader.loadClass(className);
-                Annotation annotation = classType.getDeclaredAnnotation(c);
-                if (annotation == null) {
-                    continue;
-                }
-                Method typeMethod = c.getMethod("type");
-                Method nameMethod = c.getMethod("name");
-                String name = (String) nameMethod.invoke(annotation);
-                String type = (String) typeMethod.invoke(annotation);
-                if (name.isEmpty()) {
-                    name = classType.getSimpleName();
-                }
-                //name = getName(classType, name);无需考虑不同type算子重名问题，强制各类算子命名带上类型，如SimpleRecall,SimpleFilter,SimpleAdjust
-                System.out.println(jarFile.getPath() + " get annotation: " + name + "\tclassType: " + classType.getName() + "\tclassLoader: " + classType.getClassLoader().getClass().getName());
-                Class tmp = classMap.get(name);
-                if (tmp != null) {
-                    System.out.println("functor name: " + name + " has tow classType old class: " + classType.getName() + " new class: " + tmp.getName() + " please check, now exit");
-                    System.exit(-1);
-                }
-                classMap.put(name, classType);
+        URLClassLoader classLoader = new ClassLoaderHelper(url);
+        for (String className : classNames) {
+            Class classType;
+            try {
+                classType = classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                continue;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            String name = AnnotationHelper.getAnnotationName(classType, ann);
+            if (name == null) {
+                continue;
+            }
+            //String type = getAnnotationType(classType, ann);无需考虑不同type算子重名问题，强制各类算子命名带上类型，如SimpleRecall,SimpleFilter,SimpleAdjust
+            System.out.println(jarFilePath + " get annotation: " + name + "\tclassType: " + classType.getName());
+            Class tmp = classMap.get(name);
+            if (tmp != null) {
+                System.out.println("functor name: " + name + " has tow classType old class: " + classType.getName() + " new class: "+ tmp.getName() + " please check, now exit");
+                System.exit(-1);
+            }
+            classMap.put(name, classType);
         }
 
         return classMap;
     }
 
-    static public List<String> getJarFiles(String jarFilePath, String packagePath) throws IOException {
-        List<String> files = new ArrayList<>();
-        ZipFile zipFile = null;
-        try {
-            zipFile = new ZipFile(jarFilePath);
-            Enumeration<? extends ZipEntry> iterator = zipFile.entries();
-            while (iterator.hasMoreElements()) {
-                ZipEntry entry = iterator.nextElement();
-                String name = entry.getName().replace("/", ".");
-                if (!name.endsWith("class") || !name.startsWith(packagePath)) {
-                    continue;
-                }
-                files.add(name.substring(0, name.lastIndexOf(".")));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            zipFile.close();
+    static JarFile getJarFile(URL url) throws IOException {
+        String filePath = url.getPath().substring(1);
+        if ("file".equals(url.getProtocol())) {
+            return new JarFile(filePath);
         }
 
-        return files;
+        FileUtils.copyURLToFile(url, new File(filePath), 1000, 1000);
+        return new JarFile(filePath);
     }
 
-    public static void main(String[] argv) {
+    static public List<String> getClassName(JarFile jarFile) {
+        return jarFile.stream()
+                .filter(entry -> entry.getName().endsWith("class"))
+                .map(entry -> {
+                    String name = entry.getName();
+                    return name.replace("/", ".").substring(0, name.lastIndexOf("."));
+                })
+                .collect(Collectors.toList());
+    }
+
+    public static void main(String[] argv) throws IllegalAccessException, InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, MalformedURLException {
+
+        Map<String, Class<?>> classMap = JarHelper.loadJAR("file:/F:\\xiewenwu\\recommend-framework\\recommend-framework-1.0-SNAPSHOT-jar-with-dependencies2.jar", Functor.class);
+        System.out.println(classMap);
 
         System.out.println(new SimpleSort().getClass().getClassLoader());
-        Map<String, Class<?>> classMap = JarHelper.loadJAR("F:\\xiewenwu\\recommend-framework\\target\\recommend-framework-1.0-SNAPSHOT-jar-with-dependencies1.jar", "recommend",  Functor.class);
-        System.out.println(classMap);
         System.out.println(classMap.get("SimpleSort").getClassLoader());
+
+        Class c = classMap.get("SimpleSort");
+        recommend.framework.functor.Functor functor = recommend.framework.functor.Functor.class.cast(c.newInstance());
+        functor.open(new FunctorConfig());
+        functor.invoke(new Event());
+        new SimpleSort().sort(Collections.emptyList());
+        System.out.println(SimpleSort.class.getClassLoader());
+        System.out.println(new SimpleSort().getClass().getClassLoader());
+        System.out.println(ClassLoader.getSystemClassLoader());
     }
 }

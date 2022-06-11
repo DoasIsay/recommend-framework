@@ -12,7 +12,6 @@ import recommend.framework.util.KafkaHelper;
 
 /**
  * @author xiewenwu
- * @date 2022/5/2 12:55
  */
 @Slf4j
 public abstract class AbstractLog implements Log, Runnable {

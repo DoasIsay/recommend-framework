@@ -1,5 +1,9 @@
 package recommend.framework.functor.impl.manager;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.annotation.Functor;
 import recommend.framework.config.FunctorConfig;
 import recommend.framework.functor.AbstractManager;

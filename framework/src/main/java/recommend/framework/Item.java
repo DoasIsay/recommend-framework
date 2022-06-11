@@ -34,4 +34,13 @@ public class Item extends ExtInfo {
         //查询服务或本地cache自动获取
         return new Object();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Item) {
+            Item item = (Item) obj;
+            return item.getId().equals(getId());
+        }
+        return false;
+    }
 }

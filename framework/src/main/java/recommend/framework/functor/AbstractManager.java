@@ -1,137 +1,159 @@
 package recommend.framework.functor;
 
+/**
+ * @author xiewenwu
+ */
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import recommend.framework.Event;
-import recommend.framework.Item;
+import recommend.framework.ExpParam;
+import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 import recommend.framework.rulengine.RuleEngineFactory;
 import recommend.framework.util.ThreadPoolHelper;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Data
 @Slf4j
 public abstract class AbstractManager extends AbstractFunctor {
-    public enum Mode {
-        serial,   //串行执行，比如过滤，调权算子串行
-        cutoff,   //短路执行，遍历算子任何一个执行成功就结束，先出现的算子优先级高（占位算子有优先级），后边算子优先级低可做兜底（观星排序失败，快排兜底）
-        parallel  //并行执行，比如获取特征，多路召回算子是并行的
-    }
-    String mode = Mode.serial.name();//manager管理的算子运行模式
+    //manager管理的算子运行模式
+    Mode mode = Mode.serial;
     public int timeout;
     static Map<String, ThreadPoolExecutor> threadPoolMap = new ConcurrentHashMap<>();
     public ThreadPoolExecutor threadPool;
 
     @Override
     public void open(FunctorConfig config) {
-        setType("manager");
+        setType(Type.manager);
         super.open(config);
         timeout = config.getValue("timeout", 60);
-
-        mode = config.getString("mode", Mode.serial.name());
-
+        mode = Mode.valueOf(config.getString("mode", Mode.serial.name()));
         threadPool = ThreadPoolHelper.get(getType() + "-" + getName(), 8, 64, 0);
     }
 
-    public boolean strategyFilter(String name) {
+    public boolean strategyFilter(ExpParam expParam) {
         //实验参数开关
         boolean flag = Optional.ofNullable(expParam)
-                .map(param -> param.getInt("open", 0))
-                .map(open -> 1 == open)
+                .map(param -> param.getValue("open", false))
                 .orElse(false);
-        //未命中实验
-        if (!flag) return false;
 
-        if (userFeatures == null || userFeatures.isEmpty())
+        //未命中实验
+        if (!flag) {
+            return true;
+        }
+
+        if (userFeatures == null || userFeatures.isEmpty()) {
             return false;
-        //通过用户相关属性来判断是否开启此策略，比如，信息流用户，新户，高活，，
-        return (Boolean) Optional.ofNullable(expParam.getString("express", ""))//简单规则表达式，比如圏用户
+        }
+
+        //简单规则表达式，比如圏用户通过用户相关属性来判断是否开启此策略，比如新户，高活，，
+        return Optional.ofNullable(expParam.getString("express", ""))
                 .filter(StringUtils::isNotEmpty)
-                .map(expressStr -> RuleEngineFactory.get(expParam.getString("ruleEngine", "aviator")).execute(expressStr, userFeatures))
+                .map(expressStr -> !(boolean) RuleEngineFactory.get(expParam.getString("ruleEngine", "aviator")).execute(expressStr, userFeatures))
                 .orElse(false);
     }
 
     public List<Functor> getFunctors() {
-        return getFunctors(false);
-    }
-
-    public List<Functor> getFunctors(boolean async) { //todo: filter并发初始化？无必要，一般从redis拉数据耗时在2ms左右，而最长的召回耗时在20-30ms
-        String functorNames = config.getFunctors();
-        if (StringUtils.isEmpty(functorNames)) {
-            log.warn("not find {} appConfig", type);
+        List<String> functorNames = config.getFunctors();
+        if (functorNames == null || functorNames.isEmpty()) {
+            log.warn("{} functors is empty", config.getName());
             return Collections.emptyList();
         }
 
-        List<Functor> functors = new ArrayList<>();
-        for (String functorName : functorNames.split(",")) {
-            if (strategyFilter(functorName)) continue;
+        return functorNames.parallelStream().map(name -> {
+            FunctorConfig functorConfig = FunctorFactory.getConfig(name);
+            if (functorConfig == null) {
+                return null;
+            }
 
-            Functor functor = FunctorFactory.get(functorName);
-            if (functor != null) functors.add(functor);
-        }
-        return functors;
+            //构造算子参数
+            ExpParam expParam = new ExpParam(
+                    functorConfig.getType(),
+                    functorConfig.getName(),
+                    context != null ? context.getExpConfig() : Config.EMPTY,
+                    new Config(functorConfig.getConfig())
+            );
+
+            //todo: 落盘生效参数
+            if (strategyFilter(expParam)) {
+                return null;
+            }
+
+            System.out.println(expParam);
+            AbstractFunctor functor = (AbstractFunctor) FunctorFactory.create(functorConfig.getFunctor());
+            if (functor != null) {
+                functor.open(functorConfig);
+                functor.setExpParam(expParam);
+            }
+
+            return functor;
+        }).filter(functor -> functor != null).collect(Collectors.toList());
     }
 
     @Override
-    public Event doInvoke(Event event) {
-        Mode tmpMode = Mode.serial;
-        try {
-            tmpMode = Mode.valueOf(mode);
-        } catch (Exception e) {
-            System.out.println("not support mode: " + mode);
-            log.warn("not support mode: {}, use default mode: serial", mode);
+    public int doInvoke(Event event) {
+        switch (mode) {
+            case serial:
+                return doInvokeSerial(event);
+            case cutoff:
+                return doInvokeCutOff(event);
+            case parallel:
+                return doInvokeParallel(event);
         }
-
-        switch (tmpMode) {
-            case serial: return doInvokeSerial(event);
-            case cutoff: return doInvokeCutOff(event);
-            case parallel: return doInvokeParallel(event);
-        }
-        return event;
+        return 0;
     }
 
-    Event doInvokeParallel(Event event) {
-        List<Callable<Event>> featureTasks = new ArrayList<>();
-        getFunctors().forEach(functor -> featureTasks.add(()->functor.invoke(event)));
-
-        List<Item> result = new ArrayList<>();
-        try {
-            List<Future<Event>> futures = threadPool.invokeAll(featureTasks, timeout, TimeUnit.MILLISECONDS);
-            for (Future<Event> future: futures) {
-                if (future.isDone()) {
-                    Event tmp = future.get();
-                    result.addAll(tmp.getItems());
-                } else {
-                    log.error("{} {} threadPool invokerAll error: task is cancel", type, name);
-                }
-            }
-            event.setItems(result);
-        } catch (InterruptedException | ExecutionException e) {
-            event.setCode(-1);
-            log.error("{} {} threadPool invokerAll error:", type, name);
+    public int doInvokeParallel(Event event) {
+        List<Functor> functors = getFunctors();
+        if (functors.isEmpty()) {
+            return 0;
         }
-        return event;
+
+        List<Callable<Integer>> featureTasks = new ArrayList<>(functors.size());
+        functors.forEach(functor -> featureTasks.add(() -> functor.invoke(event)));
+
+        try {
+            threadPool.invokeAll(featureTasks, timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.error("{} {} threadPool invokerAll error:", type, name, e);
+        }
+        return 0;
     }
 
-    Event doInvokeSerial(Event event) {
+    public int doInvokeSerial(Event event) {
         getFunctors().forEach(functor -> functor.invoke(event));
-        return event;
+        return 0;
     }
 
-    Event doInvokeCutOff(Event event) {
+    public int doInvokeCutOff(Event event) {
         getFunctors().forEach(functor -> {
-            functor.invoke(event);
-            if (event.getCode() > 0) return;
+            if (functor.invoke(event) >= 0) {
+                return;
+            }
         });
-        return event;
+        return 0;
     }
 
     @Override
     public void close() {
 
+    }
+
+    public enum Mode {
+        //串行执行，比如过滤，调权算子
+        serial,
+        //短路执行，遍历算子任何一个执行成功就结束，先出现的算子优先级高（占位算子有优先级），后边算子优先级低可做兜底（观星排序失败，快排兜底）
+        cutoff,
+        //并行执行，比如获取特征，多路召回算子是并行的
+        parallel
     }
 }
 

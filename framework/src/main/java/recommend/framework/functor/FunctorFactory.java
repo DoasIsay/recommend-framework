@@ -6,14 +6,13 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ctrip.framework.apollo.ConfigFile;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import recommend.framework.config.AppConfig;
+import recommend.framework.Event;
 import recommend.framework.config.Config;
 import recommend.framework.config.ConfigManager;
-import recommend.framework.util.AnnotationHelper;
 import recommend.framework.config.FunctorConfig;
+import recommend.framework.util.AnnotationHelper;
 import recommend.framework.util.FileMonitor;
 import recommend.framework.util.JarHelper;
 import recommend.framework.util.JsonHelper;
@@ -23,6 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+/**
+ * @author xiewenwu01
+ */
 
 @Slf4j
 public class FunctorFactory {
@@ -39,7 +42,6 @@ public class FunctorFactory {
     }
 
     public FunctorFactory() {
-
     }
 
     public static Config load(ConfigFile configFile) {
@@ -52,7 +54,10 @@ public class FunctorFactory {
 
         System.out.println(config);
         functors = config.getList("functors", FunctorConfig.class);
-        name2Config = functors.stream().filter(functorConfig -> StringUtils.isNotEmpty(functorConfig.getName())).collect(Collectors.toMap(FunctorConfig::getName, v -> v));
+        name2Config = functors.stream()
+                .filter(functorConfig -> StringUtils.isNotEmpty(functorConfig.getName()))
+
+                .collect(Collectors.toMap(FunctorConfig::getName, v -> v));
         System.out.println(JSON.toJSONString(name2Config, SerializerFeature.PrettyFormat));
         log.info(JSON.toJSONString(name2Config, SerializerFeature.PrettyFormat));
         return config;
@@ -61,37 +66,30 @@ public class FunctorFactory {
 
     private static void load(File file) {
         try {
-            Map<String, Class<?>> tmp = JarHelper.loadJAR(file.getAbsolutePath(), "recommend", recommend.framework.annotation.Functor.class);
+            Map<String, Class<?>> tmp = JarHelper.loadJAR("file:/"+file.getAbsolutePath(), recommend.framework.annotation.Functor.class);
             name2Class = tmp;
+            Functor functor = create("SimpleSort");
+            functor.invoke(new Event());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static Functor get(String name) {
-        return create(name);
-    }
-
     public static Functor create(String name) {
-        FunctorConfig functorConfig = name2Config.get(name);
-        if (functorConfig == null) {
-            log.error("functor appConfig not found error: {}", name);
-            System.out.println("functor appConfig not found error: " + name);
-            return null;
-        }
-        Class c = name2Class.get(functorConfig.getFunctor());
-        if (c == null)
+        Class c = name2Class.get(name);
+        if (c == null) {
             throw new RuntimeException("not support: " + name);
+        }
 
-        Functor functor;
         try {
-            functor = (Functor) c.newInstance();
-            functor.open(functorConfig);
+            return Functor.class.cast(c.newInstance());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("create instance fail: " + name);
         }
+    }
 
-        return functor;
+    public static FunctorConfig getConfig(String name) {
+        return name2Config.get(name);
     }
 }

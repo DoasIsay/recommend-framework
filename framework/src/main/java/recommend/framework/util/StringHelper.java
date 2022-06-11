@@ -7,6 +7,9 @@ import org.apache.commons.math3.util.Pair;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * @author xiewenwu
+ */
 public class StringHelper extends org.apache.commons.lang.StringUtils {
     public static Set<String> toSet(String str) {
         return toSet(str, ",", (s)->s);

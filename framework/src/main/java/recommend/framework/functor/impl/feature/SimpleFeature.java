@@ -1,5 +1,9 @@
 package recommend.framework.functor.impl.feature;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractFeature;
 

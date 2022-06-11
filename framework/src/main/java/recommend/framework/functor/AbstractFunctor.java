@@ -1,24 +1,26 @@
 package recommend.framework.functor;
 
+/**
+ * @author xiewenwu
+ */
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import recommend.framework.Context;
 import recommend.framework.Event;
 import recommend.framework.ExpParam;
 import recommend.framework.Item;
-import recommend.framework.config.Config;
 import recommend.framework.config.FunctorConfig;
 import recommend.framework.metrics.impl.MetricsReporter;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @Slf4j
 public abstract class AbstractFunctor implements Functor {
-    public String type = "functor";//算子类型，begin,manager,recall,filter,sort,adjust,resort,position,end,
+    public Type type = Type.functor;//算子类型，begin,manager,recall,filter,sort,adjust,resort,position,end,
     public String name;//算子名，SimpleRedis,SimpleFilter,SimpleAdjust,,
     public String metricName;//统计指标名
     public ExpParam expParam;//实验参数包含config
@@ -28,12 +30,15 @@ public abstract class AbstractFunctor implements Functor {
     public Map<String,Object> userFeatures;//用户特征
     public List<Item> items;//物料
     MetricsReporter metricsReporter;//上报指标
+    int size;//返回结果大小
+    Object result;//算子返回结果
+
 
     @Override
     public void open(FunctorConfig config) {
         this.config = config;
         this.name = config.getName();
-        metricsReporter = MetricsReporter.get(type);
+        metricsReporter = MetricsReporter.get(type.name());
         metricName = type + "/" + name;
     }
 
@@ -41,30 +46,62 @@ public abstract class AbstractFunctor implements Functor {
     public void init() {
         items = event.getItems() != null? event.getItems(): Collections.emptyList();
         context = event.getContext();
-        expParam = new ExpParam(type, name, new Config(new HashMap<>()), new Config(config.config));
         userFeatures = event.getUserFeatures() != null? event.getUserFeatures(): Collections.emptyMap();
     }
 
     @Override
-    public Event invoke(Event event) {
+    public int invoke(Event event) {
         long startTime = System.currentTimeMillis();
         this.event = event != null? event: Event.EMPTY;
         System.out.println(getType()+"-"+getName()+ " run");
 
+        //0成功，1返回为空，-1失败
+        int code = 0;
         try {
             init();
-            Event tmp = doInvoke(event);
-            metricsReporter.metrics(startTime, tmp.getCode(), tmp.getSize(), getMetricName());
+            code = doInvoke(event);
+            metricsReporter.metrics(startTime, code, getSize(), getMetricName());
+
+            //System.out.println(event.getItems());
         } catch (Exception e) {
-            metricsReporter.metrics(startTime, -1, 0, getMetricName());
+            code = -1;
+            metricsReporter.metrics(startTime, code, 0, getMetricName());
+            e.printStackTrace();
             log.error("{} {} invoke error:", type, name);
             e.printStackTrace();
+            code = -1;
         }
-        return event;
+        return code;
     }
 
     @Override
     public void close() {
 
+    }
+
+    @Override
+    public <T> T getResult() {
+        return (T) result;
+    }
+
+    public void setResult(Object obj) {
+        result = obj;
+        if (obj instanceof List) {
+            size = ((List)obj).size();
+        }
+    }
+
+    enum Type {
+        functor,
+        manager,
+        begin,
+        feature,
+        recall,
+        filter,
+        sort,
+        adjust,
+        resort,
+        position,
+        end
     }
 }

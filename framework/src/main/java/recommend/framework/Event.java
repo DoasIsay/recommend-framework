@@ -4,13 +4,14 @@ import lombok.Data;
 import recommend.framework.log.LogManager;
 import recommend.framework.util.ExtInfo;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
+/**
+ * @author xiewenwu
+ */
 @Data
-public class Event extends ExtInfo {
+public final class Event extends ExtInfo {
     public static final Event EMPTY = new Event();
     long eventTime = System.currentTimeMillis();
 
@@ -47,9 +48,9 @@ public class Event extends ExtInfo {
         return (T) context;
     }
 
-    Map<String, Object> userFeatures = new ConcurrentHashMap<>();//用户特征存map方便规则引擎使用
-    List<Item> items = Collections.emptyList();//物料集
-    int code;//0返回为空，1成功，-1失败，-2超时，-3任务取消
+    List<Item> items;//召回物料集
+    List<Item> result;//最终返回结果物料集
+    int code = 1;//0返回为空，1成功，-1失败，-2超时，-3任务取消
     int size;//items大小
 
     public void setItems(List<Item> items) {
@@ -59,13 +60,16 @@ public class Event extends ExtInfo {
         code = size == 0 ? 0 : 1;
     }
 
+    volatile Map<String, Object> userFeatures;
+
     public <T> void setUserFeature(Class c, T var) {
         setUserFeature(c.getSimpleName(), var);
     }
 
     public <T> void setUserFeature(String name, T var) {
-        if (var instanceof Map) {
+        if (var instanceof Map) {// 拍平
             userFeatures.putAll((Map) var);
+            return;
         }
         userFeatures.put(name, var);
     }
@@ -78,5 +82,16 @@ public class Event extends ExtInfo {
         return (T) userFeatures.getOrDefault(name, defVar);
     }
 
-    LogManager logManager = new LogManager(this);
+    LogManager logManager;
+
+    public Event(boolean init) {
+        if (init) {
+            logManager = new LogManager(this);
+            userFeatures = new ConcurrentHashMap<>();
+        }
+    }
+
+    public Event() {
+        this(true);
+    }
 }

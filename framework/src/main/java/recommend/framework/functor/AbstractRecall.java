@@ -1,5 +1,9 @@
 package recommend.framework.functor;
 
+/**
+ * @author xiewenwu
+ */
+
 import lombok.Data;
 import recommend.framework.Event;
 import recommend.framework.Item;
@@ -12,7 +16,7 @@ import java.util.List;
 public abstract class AbstractRecall extends AbstractFunctor {
     @Override
     public void open(FunctorConfig config) {
-        setType("recall");
+        setType(Type.recall);
         super.open(config);
     }
 
@@ -21,21 +25,21 @@ public abstract class AbstractRecall extends AbstractFunctor {
     public abstract List<Item> recall();
 
     @Override
-    public Event doInvoke(Event event) {
+    public int doInvoke(Event event) {
         List<Item> items = recall();
         items.forEach(item -> item.setChn(getName()));
-        event.setItems(items);
+
         //统一过滤
         //filterManager.invoke(event);
         //召回截断
+        int size = items.size();
         int exceptNum = expParam.getValue("exceptNum", 100);
-        event.setItems(event.getSize() > exceptNum? event.getItems().subList(0, exceptNum): event.getItems());
+        setResult(size > exceptNum? items.subList(0, exceptNum): items);
 
-        if (event.getSize() != 0) {
+        if (size != 0) {
             //todo:记录召回日志
         }
 
-        //metricsReporter.counter(event.getSize(), "size", getMetricName());
-        return event;
+        return size > 0? 0: -1;
     }
 }

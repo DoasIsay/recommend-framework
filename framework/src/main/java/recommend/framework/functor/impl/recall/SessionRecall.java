@@ -1,12 +1,16 @@
 package recommend.framework.functor.impl.recall;
 
+/**
+ * @author xiewenwu
+ */
+
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
 import recommend.framework.functor.AbstractRecall;
 import recommend.framework.rulengine.RuleEngine;
 import recommend.framework.rulengine.RuleEngineFactory;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Functor(name = "SessionRecall")
@@ -24,14 +28,11 @@ public class SessionRecall extends AbstractRecall {
     }
     @Override
     public List<Item> recall() {
-        /*
-        ReaderInfo readerInfo= event.getUserFeature("session", null);
-        return readerInfo.getAsFeasByMinute(5).stream()
-                .filter(feature->(boolean) ruleEngine.execute(express, PbHelper.toMap((Message) feature)))
-                .map(fea->new Item(String.valueOf(fea.getAid()), 0f))
-                .collect(Collectors.toList());
-
-         */
-        return Collections.emptyList();
+        return new ArrayList<Item>(){{
+            add(new Item("1234", 0f));
+            add(new Item("1235", 0f));
+            add(new Item("1236", 0f));
+            add(new Item("1237", 0f));
+        }};
     }
 }

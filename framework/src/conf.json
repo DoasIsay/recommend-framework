@@ -1,231 +1,285 @@
 {
-  "functors":[
+  "functors": [
+    {"manager-comment": "manager配置"},
+
     {
-      "manager-comment":"manager配置"
-    },
-    {
-      "name":"MainManager",
-      "functor":"Manager",
-      "comment":"管理算子，调度执行其它算子",
-      "functors":"BeginManager,FeatureManager,RecallManager,FilterManager,SortManager,AdjustManager,ResortManager,PositionManager,EndManager",
-      "config":{
-        "open":1
+      "type": "manager",
+      "name": "MainManager",
+      "functor": "Manager",
+      "comment": "顶级管理算子，串行调度执行子管理算子",
+      "functors": ["BeginManager", "FeatureManager", "RecallManager", "FilterManager", "SortManager", "AdjustManager", "ResortManager", "PositionManager", "EndManager"],
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"BeginManager",
-      "functor":"Manager",
-      "comment":"串行执行一些准备工作，后边算子会依赖前边算子的输出",
-      "functors":"GetToken,RequestToUserContext,ABExpParam",
-      "config":{
-        "open":1
+      "type": "manager",
+      "name": "BeginManager",
+      "functor": "Manager",
+      "comment": "串行执行一些准备工作，算子间有依赖，后边算子会依赖前边算子的输出",
+      "functors": ["GetToken", "RequestToUserContext", "ABExpParam"],
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"FeatureManager",
-      "functor":"Manager",
-      "comment":"并行获取用户特征",
-      "functors":"SexFeature,SessionFeature,SimpleFeature",
-      "config":{
-        "open":1,
-        "mode":"parallel"
+      "type": "manager",
+      "name": "FeatureManager",
+      "functor": "Manager",
+      "comment": "并行获取用户特征，算子间无依赖",
+      "functors": ["SexFeature", "SessionFeature", "SimpleFeature"],
+      "config": {
+        "open": true,
+        "mode": "parallel"
       }
     },
     {
-      "name":"RecallManager",
-      "functor":"Manager",
-      "comment":"并行召回",
-      "functors":"SimpleRedis,PosRecall,SessionRecall",
-      "config":{
-        "open":1,
-        "mode":"parallel"
+      "type": "manager",
+      "name": "RecallManager",
+      "functor": "RecallManager",
+      "comment": "并行召回",
+      "functors": ["SimpleRedis", "PosRecall", "SessionRecall"],
+      "config": {
+        "open": true,
+        "mode": "parallel"
       }
     },
     {
-      "name":"FilterManager",
-      "functor":"Manager",
-      "comment":"串行执行过滤",
-      "functors":"BizFilter",
-      "config":{
-        "open":1
+      "type": "manager",
+      "name": "FilterManager",
+      "functor": "Manager",
+      "comment": "串行执行过滤",
+      "functors": ["BizFilter"],
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SortManager",
-      "functor":"Manager",
-      "comment":"排序",
-      "functors":"PredictSort",
-      "config":{
-        "open":1,
-        "mode":"cutoff"
+      "type": "manager",
+      "name": "SortManager",
+      "functor": "Manager",
+      "comment": "排序，依次顺序执行算子，任何一个算子执行成功则停止执行后边的算子",
+      "functors": ["PredictSort", "SimpleSort"],
+      "config": {
+        "open": true,
+        "mode": "cutoff"
       }
     },
     {
-      "name":"AdjustManager",
-      "functor":"Manager",
-      "comment":"调权",
-      "functors":"ChnAdjust1,ChnAdjust2",
-      "config":{
-        "open":1
+      "type": "manager",
+      "name": "AdjustManager",
+      "functor": "Manager",
+      "comment": "调权",
+      "functors": ["ChnAdjust1", "ChnAdjust2"],
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"ResortManager",
-      "functor":"Manager",
-      "comment":"重排",
-      "functors":"SimpleResort",
-      "config":{
-        "open":1,
-        "mode":"cutoff"
+      "type": "manager",
+      "name": "ResortManager",
+      "functor": "Manager",
+      "comment": "重排",
+      "functors": ["SimpleResort"],
+      "config": {
+        "open": true,
+        "mode": "cutoff"
       }
     },
     {
-      "name":"PositionManager",
-      "functor":"Manager",
-      "comment":"串行执行，前面算子优先占位，后边算子继续占剩余的位",
-      "functors":"StrongPosition,ChnPosition,SimplePosition",
-      "config":{
-        "open":1,
-        "mode":"cutoff"
+      "type": "manager",
+      "name": "PositionManager",
+      "functor": "Manager",
+      "comment": "串行执行，前面算子优先占位，后边算子继续占剩余的位",
+      "functors": ["StrongPosition", "ChnPosition", "SimplePosition"],
+      "config": {
+        "open": true,
+        "mode": "cutoff"
       }
     },
     {
-      "name":"EndManager",
-      "functor":"Manager",
-      "comment":"返回请求结果，日志落盘",
-      "functors":"EventToResponse,LogDump",
-      "config":{
-        "open":1,
-        "mode":"parallel"
+      "type": "manager",
+      "name": "EndManager",
+      "functor": "Manager",
+      "comment": "返回请求结果，日志落盘",
+      "functors": ["EventToResponse", "LogDump"],
+      "config": {
+        "open": false,
+        "mode": "parallel"
+      }
+    },
+
+    {"functor-comment": "functor 配置"},
+
+    {
+      "type": "recall",
+      "name": "SessionRecall",
+      "functor": "SessionRecall",
+      "exceptNum": 100,
+      "config": {
+        "open": true,
+        "comment": "规则表达示圏用户",
+        "express": "actDay<30 || version>8",
+        "comment": "种子过滤规则",
+        "seedExpress": "dr>10 && views>1 || likes>0 || pay>1"
       }
     },
     {
-      "functor-comment":"functor 配置"
-    },
-    {
-      "name":"SessionRecall",
-      "functor":"SessionRecall",
-      "exceptNum":100,
-      "规则表达示":"种子过滤规则",
-      "express":"actDay<30 || version>8 || \"man\".equals(sex)",
-      "seedExpress":"dr>10 && views>1 || likes>0 || pay>1",
-      "config":{
-        "open":1
+      "type": "begin",
+      "name": "GetToken",
+      "functor": "GetToken",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"GetToken",
-      "functor":"GetToken",
-      "config":{
-        "open":1
+      "type": "begin",
+      "name": "RequestToUserContext",
+      "functor": "RequestToUserContext",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"RequestToUserContext",
-      "functor":"RequestToUserContext",
-      "config":{
-        "open":1
+      "type": "begin",
+      "name": "ABExpParam",
+      "functor": "ABExpParam",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"ABExpParam",
-      "functor":"ABExpParam",
-      "config":{
-        "open":1
+      "type": "feature",
+      "name": "SimpleFeature",
+      "functor": "SimpleFeature",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SimpleFeature",
-      "functor":"SimpleFeature",
-      "config":{
-        "open":1
+      "type": "feature",
+      "name": "SexFeature",
+      "functor": "SexFeature",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SexFeature",
-      "functor":"SexFeature",
-      "config":{
-        "open":1
+      "type": "recall",
+      "name": "SimpleRedis",
+      "functor": "SimpleRedis",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SimpleRedis",
-      "functor":"SimpleRedis",
-      "config":{
-        "open":1
+      "type": "recall",
+      "name": "PosRecall",
+      "functor": "PosRecall",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SessionFeature",
-      "functor":"SessionFeature",
-      "config":{
-        "open":1
+      "type": "filter",
+      "name": "SimpleFilter",
+      "functor": "SimpleFilter",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"PosRecall",
-      "functor":"PosRecall",
-      "config":{
-        "open":1
+      "type": "filter",
+      "name": "BizFilter",
+      "functor": "BizFilter",
+      "config": {
+        "open": true
       }
     },
     {
-      "name":"SimpleFilter",
-      "functor":"SimpleFilter",
-      "config":{
-        "open":1
+      "type": "filter",
+      "name": "CoverFilter",
+      "functor": "SimpleFilter",
+      "config": {
+        "open": true,
+        "comment": "规则表达示圏用户",
+        "express": "highActive == true && 'ios'==os && offset<100"
       }
     },
     {
-      "name":"BizFilter",
-      "functor":"BizFilter",
-      "config":{
-        "open":1
+      "type": "sort",
+      "name": "SimpleSort",
+      "functor": "SimpleSort",
+      "config": {
+        "open": false,
+        "comment": "规则表达示圏用户",
+        "express": "highActive == true && 'ios'==os && offset<100"
       }
     },
     {
-      "name":"CoverFilter",
-      "functor":"SimpleFilter",
-      "comment":"规则表达示圏用户",
-      "express":"highActive == true && \"ios\".equals(os) && offset<100",
-      "config":{
-        "open":1
+      "type": "adjust",
+      "name": "ChnAdjust1",
+      "functor": "ChnAdjust",
+      "config": {
+        "open": true,
+        "chn": "SimpleRedis",
+        "comment": "规则表达示圏用户",
+        "express": "'ios'==os && offset==0"
       }
     },
     {
-      "name":"ChnAdjust1",
-      "functor":"ChnAdjust",
-      "config":{
-        "chn":"SimpleRedis",
-        "comment":"规则表达示圏用户",
-        "express":"lowActive == true"
+      "type": "adjust",
+      "name": "ChnAdjust2",
+      "functor": "ChnAdjust",
+      "config": {
+        "open": true,
+        "chn": "SimpleRedis",
+        "comment": "规则表达示圏用户",
+        "express": "lowActive == true"
       }
     },
     {
-      "name":"ChnAdjust2",
-      "functor":"ChnAdjust",
-      "config":{
-        "chn":"SimpleRedis",
-        "comment":"规则表达示圏用户",
-        "express":"lowActive == true"
+      "type": "position",
+      "name": "ChnPosition",
+      "functor": "ChnPosition",
+      "config": {
+        "open": true,
+        "chnPos": "SessionRecall:4,5,6"
       }
     },
     {
-      "name":"ChnPosition",
-      "functor":"ChnPosition",
-      "config":{
-        "chnPos":"SessionRecall:4,5,6"
+      "type": "position",
+      "name": "StrongPosition",
+      "functor": "StrongPosition",
+      "config": {
+        "open": true,
+        "chn": "PosRecall"
       }
     },
     {
-      "name":"EventToResponse",
-      "functor":"EventToResponse",
-      "open":1
+      "type": "position",
+      "name": "SimplePosition",
+      "functor": "SimplePosition",
+      "config": {
+        "open": true
+      }
     },
     {
-      "name":"LogDump",
-      "functor":"LogDump",
-      "open":1
+      "type": "end",
+      "name": "EventToResponse",
+      "functor": "EventToResponse",
+      "config": {
+        "open": true
+      }
+    },
+    {
+      "type": "end",
+      "name": "LogDump",
+      "comment": "日志落盘",
+      "functor": "LogDump",
+      "config": {
+        "open": false
+      }
     }
   ]
 }

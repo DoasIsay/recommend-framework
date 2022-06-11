@@ -1,9 +1,13 @@
 package recommend.framework;
 
-import recommend.framework.config.AppConfig;
+import lombok.Data;
 import recommend.framework.config.Config;
 
-//实验参数
+/**
+ * @author xiewenwu
+ * 实验参数
+ */
+@Data
 public class ExpParam {
     String ns;
     String type;
@@ -25,7 +29,15 @@ public class ExpParam {
 
     public <T> T getValue(String key, T defVar) {
         //优先从实验平台拿参数，拿不到使用配置的默认参数
-        return (T) exp.getValue(getKey(key), def.getValue(key, defVar));
+        if (exp != null) {
+            return (T) exp.getValue(getKey(key), def.getValue(key, defVar));
+        }
+
+        if (def != null) {
+            return def.getValue(key, defVar);
+        }
+
+        return defVar;
     }
 
     public int getInt(String name) {
@@ -39,5 +51,8 @@ public class ExpParam {
     public String getString(String name) { return getValue(name, ""); }
     public String getString(String key, String defVar) {
         return getValue(key, defVar);
+    }
+    public boolean getBool(String name) {
+        return getValue(name, false);
     }
 }

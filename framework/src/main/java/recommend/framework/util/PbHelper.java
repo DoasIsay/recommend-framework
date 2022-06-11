@@ -5,7 +5,9 @@ import com.google.protobuf.Message;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * @author xiewenwu
+ */
 public class PbHelper {
     public static Map<String, Object> toMap(Message message) {
         Map<String, Object> map = new HashMap<>(message.getAllFields().size());

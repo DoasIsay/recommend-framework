@@ -3,14 +3,15 @@ package recommend.framework.util;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import recommend.framework.Factory;
-import recommend.framework.functor.FunctorFactory;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * @author xiewenwu
+ */
 public class FileMonitor extends FileAlterationListenerAdaptor {
     @Override
     public void onFileCreate(File file) {

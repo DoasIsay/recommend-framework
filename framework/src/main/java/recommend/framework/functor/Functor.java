@@ -8,13 +8,15 @@ public interface Functor {
 
     void init();
 
-    Event invoke(Event event);
+    int invoke(Event event);
 
-    Event doInvoke(Event event);
+    int doInvoke(Event event);
 
     void close();
 
     void setName(String name);
 
     String getName();
+
+    <T> T getResult();
 }

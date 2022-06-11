@@ -2,7 +2,6 @@ package recommend.framework.annotation;
 
 /**
  * @author xiewenwu
- * @date 2022/4/7 18:07
  */
 
 import java.lang.annotation.ElementType;
