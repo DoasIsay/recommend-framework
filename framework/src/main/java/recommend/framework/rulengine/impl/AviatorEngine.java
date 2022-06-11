@@ -21,11 +21,21 @@ public class AviatorEngine implements RuleEngine {
         return AviatorEvaluator.compile(express, true).execute((Map<String,Object>) map);
     }
 
+    @Data
+    static class Test {
+        public int a = 100;
+    }
     public static void main(String[] argv) {
         Map map = new HashMap<String, Object>(){{
-            put("a", "1");
+            put("a", true);
+            put("b", false);
             put("offset", 0);
+            put("test", new Test());
+            put("map", new HashMap<String,Object>(){{
+                put("b", 123);
+            }});
         }};
-        System.out.println(AviatorEngine.getInstance().execute("'2'==b", map));
+        String express = "c!=nil && c || false";
+        System.out.println(AviatorEngine.getInstance().execute(express, map));
     }
 }

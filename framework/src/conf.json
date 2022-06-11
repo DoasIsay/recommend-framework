@@ -7,7 +7,7 @@
       "name": "MainManager",
       "functor": "Manager",
       "comment": "顶级管理算子，串行调度执行子管理算子",
-      "functors": ["BeginManager", "FeatureManager", "RecallManager", "FilterManager", "SortManager", "AdjustManager", "ResortManager", "PositionManager", "EndManager"],
+      "functors": ["BeginManager", "FeatureManager", "TagManager", "RecallManager", "FilterManager", "SortManager", "AdjustManager", "ResortManager", "PositionManager", "EndManager"],
       "config": {
         "open": true
       }
@@ -28,6 +28,17 @@
       "functor": "Manager",
       "comment": "并行获取用户特征，算子间无依赖",
       "functors": ["SexFeature", "SessionFeature", "SimpleFeature"],
+      "config": {
+        "open": true,
+        "mode": "parallel"
+      }
+    },
+    {
+      "type": "manager",
+      "name": "TagManager",
+      "functor": "Manager",
+      "comment": "并行打标签，算子间无依赖",
+      "functors": ["NewOldUserTag"],
       "config": {
         "open": true,
         "mode": "parallel"
@@ -104,26 +115,12 @@
       "comment": "返回请求结果，日志落盘",
       "functors": ["EventToResponse", "LogDump"],
       "config": {
-        "open": false,
+        "open": true,
         "mode": "parallel"
       }
     },
 
     {"functor-comment": "functor 配置"},
-
-    {
-      "type": "recall",
-      "name": "SessionRecall",
-      "functor": "SessionRecall",
-      "exceptNum": 100,
-      "config": {
-        "open": true,
-        "comment": "规则表达示圏用户",
-        "express": "actDay<30 || version>8",
-        "comment": "种子过滤规则",
-        "seedExpress": "dr>10 && views>1 || likes>0 || pay>1"
-      }
-    },
     {
       "type": "begin",
       "name": "GetToken",
@@ -162,6 +159,28 @@
       "functor": "SexFeature",
       "config": {
         "open": true
+      }
+    },
+    {
+      "type": "tag",
+      "name": "NewOldUserTag",
+      "functor": "ExpressTag",
+      "config": {
+        "open": true,
+        "tagExpress": "context.age == 0 ? 'NewUser' : 'OldUser'"
+      }
+    },
+    {
+      "type": "recall",
+      "name": "SessionRecall",
+      "functor": "SessionRecall",
+      "exceptNum": 100,
+      "config": {
+        "open": true,
+        "comment": "规则表达示圏用户",
+        "express": "NewUser!=nil && NewUser",
+        "comment": "种子过滤规则",
+        "seedExpress": "dr>10 && views>1 || likes>0 || pay>1"
       }
     },
     {
@@ -211,9 +230,9 @@
       "name": "SimpleSort",
       "functor": "SimpleSort",
       "config": {
-        "open": false,
+        "open": true,
         "comment": "规则表达示圏用户",
-        "express": "highActive == true && 'ios'==os && offset<100"
+        "express": ""
       }
     },
     {
@@ -224,7 +243,7 @@
         "open": true,
         "chn": "SimpleRedis",
         "comment": "规则表达示圏用户",
-        "express": "'ios'==os && offset==0"
+        "express": "'ios'==context.os && context.offset==0"
       }
     },
     {
@@ -261,7 +280,9 @@
       "name": "SimplePosition",
       "functor": "SimplePosition",
       "config": {
-        "open": true
+        "open": true,
+        "comment": "此算子只有Ios新户生效",
+        "express": "NewUser && context.os == 'ios'"
       }
     },
     {
@@ -278,7 +299,7 @@
       "comment": "日志落盘",
       "functor": "LogDump",
       "config": {
-        "open": false
+        "open": true
       }
     }
   ]

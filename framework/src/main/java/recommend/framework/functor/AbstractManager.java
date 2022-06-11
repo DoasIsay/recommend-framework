@@ -122,8 +122,10 @@ public abstract class AbstractManager extends AbstractFunctor {
 
         try {
             threadPool.invokeAll(featureTasks, timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             log.error("{} {} threadPool invokerAll error:", type, name, e);
+            System.out.println("invoke "+ this.getClass());
+            e.printStackTrace();
         }
         return 0;
     }

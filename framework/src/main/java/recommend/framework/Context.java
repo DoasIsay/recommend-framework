@@ -10,6 +10,7 @@ import recommend.framework.config.Config;
 public class Context {
     int offset = 0;
     int size = 10;
+    int age = 0;
     String city="";
     String version="";
     String uid="";

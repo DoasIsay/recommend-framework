@@ -7,14 +7,12 @@ package recommend.framework.functor.impl.manager;
 import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.annotation.Functor;
-import recommend.framework.config.FunctorConfig;
-import recommend.framework.functor.AbstractRecall;
 import recommend.framework.functor.AbstractManager;
+import recommend.framework.functor.AbstractRecall;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 

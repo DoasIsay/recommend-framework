@@ -65,8 +65,6 @@ public abstract class AbstractPosition extends AbstractFunctor{
     public int doInvoke(Event event) {
         result = getResult(context.getSize());
         dup = new HashSet<>(result);
-        System.out.println(result);
-        System.out.println(getItems());
         //运营强占位，产品高优先级预先占位
         arrange(getItems());
         return 0;

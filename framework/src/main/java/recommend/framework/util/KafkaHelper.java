@@ -23,7 +23,14 @@ public class KafkaHelper {
         if (kafkaMap == null) {
             kafkaMap = new ConcurrentHashMap<>();
         }
-        Config config = ConfigManager.toConfig(configFile);
+
+        Config config;
+        if (configFile != null) {
+            config = new Config(JsonHelper.fromString(configFile.getContent()));
+        } else {
+            config = new Config("framework/src/kafka.json");
+        }
+
         config.getConfig().forEach((k, v) -> {
             kafkaMap.put(k, new KafkaProducer((Map<String,Object>)v));
         });

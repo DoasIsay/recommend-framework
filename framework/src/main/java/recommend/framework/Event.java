@@ -6,7 +6,10 @@ import recommend.framework.util.ExtInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 /**
  * @author xiewenwu
  */
@@ -60,6 +63,11 @@ public final class Event extends ExtInfo {
         code = size == 0 ? 0 : 1;
     }
 
+    volatile Set<String> tags;
+    public void addTag(String tag) {
+        tags.add(tag);
+    }
+
     volatile Map<String, Object> userFeatures;
 
     public <T> void setUserFeature(Class c, T var) {
@@ -67,7 +75,10 @@ public final class Event extends ExtInfo {
     }
 
     public <T> void setUserFeature(String name, T var) {
-        if (var instanceof Map) {// 拍平
+        setUserFeature(name, var, false);
+    }
+    public <T> void setUserFeature(String name, T var, boolean flat) {
+        if (flat && var instanceof Map) {//拍平
             userFeatures.putAll((Map) var);
             return;
         }
@@ -88,6 +99,7 @@ public final class Event extends ExtInfo {
         if (init) {
             logManager = new LogManager(this);
             userFeatures = new ConcurrentHashMap<>();
+            tags = new ConcurrentSkipListSet<>();
         }
     }
 

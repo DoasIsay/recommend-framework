@@ -10,11 +10,16 @@ import recommend.framework.functor.impl.manager.Manager;
 @Slf4j
 public class Main {
     public static void main(String[] argv) {
-        log.info("start");
+        System.out.println("start manager");
+
         Event event = new Event();
         new Manager(FunctorFactory.getName2Config().get("MainManager")).invoke(event);
-        System.out.println(event.getItems());
-        System.out.println(event.getResult());
+
+        System.out.println("stop manager");
+        System.out.println("recall: " + event.getItems());
+        System.out.println("result: " + event.getResult());
+        System.out.println("tags:" + event.getTags());
+
         return;
     }
 }

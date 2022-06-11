@@ -4,20 +4,26 @@ package recommend.framework.functor;
  * @author xiewenwu
  */
 
+import org.apache.commons.lang.StringUtils;
 import recommend.framework.Event;
 import recommend.framework.config.FunctorConfig;
 
-public abstract class AbstractFeature extends AbstractFunctor{
+public abstract class AbstractTag extends AbstractFunctor {
     @Override
     public void open(FunctorConfig config) {
-        setType(Type.feature);
+        setType(Type.tag);
         super.open(config);
     }
-    public abstract Object get();
+
+    public abstract String get();
 
     @Override
     public int doInvoke(Event event) {
-        event.setUserFeature(this.getClass().getName(), get(), true);
+        String tag = get();
+        if (StringUtils.isNotEmpty(tag)) {
+            event.addTag(tag);
+            event.setUserFeature(tag, true);
+        }
         //todo:记录实时特征日志？
         return 0;
     }

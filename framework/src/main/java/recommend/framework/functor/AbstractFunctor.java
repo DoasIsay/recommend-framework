@@ -96,6 +96,7 @@ public abstract class AbstractFunctor implements Functor {
         manager,
         begin,
         feature,
+        tag,
         recall,
         filter,
         sort,
