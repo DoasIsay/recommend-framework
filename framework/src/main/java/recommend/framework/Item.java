@@ -1,20 +1,25 @@
 package recommend.framework;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import recommend.framework.util.ExtInfo;
 import recommend.framework.util.StringHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class Item extends ExtInfo {
-    public static Item EMPTY = new Item(null, 0f);
     //物料id
     String id;
     //召回通道
     String chn;
-    //原始得分
-    float score;
+    //分数
+    Score score;
     //物料详细信息
-    Object info;
+    transient Object info;
+
+    public static Item EMPTY = new Item(null, 0f);
 
     public Item(String id, float score) {
        this(id,null, score);
@@ -23,9 +28,10 @@ public class Item extends ExtInfo {
     public Item(String id, String chn, float score) {
         this.id = id;
         this.chn = chn;
-        this.score = score;
+        this.score = new Score(score);
         this.info = getInfo();
     }
+
     public boolean isEmpty() {
         return StringHelper.isEmpty(id);
     }
@@ -42,5 +48,61 @@ public class Item extends ExtInfo {
             return item.getId().equals(getId());
         }
         return false;
+    }
+
+    @Data
+    public static class Score {
+        public Score(float original) {
+            this.origQ = original;
+        }
+        //原始得分
+        float origQ;
+        //排序得分
+        float sortQ;
+        //调权得分
+        float adjQ;
+        //调权信息
+        List<Adjust> adjusts;
+        public void addAdjust(Adjust adjust) {
+            if (adjusts == null) {
+                adjusts = new ArrayList<>();
+            }
+            adjusts.add(adjust);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class Adjust {
+        String name;
+        float weight;
+    }
+
+    public void setOrigQ(float q) {
+        score.setOrigQ(q);
+    }
+
+    public void setSortQ(float q) {
+        score.setSortQ(q);
+    }
+
+    public void setAdjQ(float q) {
+        score.setAdjQ(q);
+    }
+
+    public float getOrigQ() {
+        return score.getOrigQ();
+    }
+
+    public float getSortQ() {
+        return score.getSortQ();
+    }
+
+    public float getAdjQ() {
+        return score.getAdjQ();
+    }
+
+    public void addAdjust(String name, float weight) {
+        score.addAdjust(new Adjust(name, weight));
     }
 }

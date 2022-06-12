@@ -21,7 +21,12 @@ public abstract class AbstractSort extends AbstractFunctor{
 
     @Override
     public int doInvoke(Event event) {
-        event.setItems(sort(getItems()));
+        List<Item> tmp = sort(getItems());
+        tmp.forEach(item -> {
+            item.setAdjQ(item.getSortQ());
+        });
+
+        event.setItems(tmp);
         return 0;
     }
 }

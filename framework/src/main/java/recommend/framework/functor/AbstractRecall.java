@@ -35,10 +35,10 @@ public abstract class AbstractRecall extends AbstractFunctor {
         int size = items.size();
         int exceptNum = expParam.getValue("exceptNum", 100);
         items = size > exceptNum? items.subList(0, exceptNum): items;
-        setResult(items);
-        event.setItems(items);
+
         if (size != 0) {
             //todo:记录召回日志
+            event.addItems(items);
         }
 
         return size > 0? 0: -1;

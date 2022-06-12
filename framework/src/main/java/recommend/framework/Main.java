@@ -1,5 +1,8 @@
 package recommend.framework;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import recommend.framework.cache.CacheManager;
 import recommend.framework.config.ConfigManager;
@@ -25,9 +28,11 @@ public class Main {
         new Manager(config).invoke(event);
 
         System.out.println("stop manager");
-        System.out.println("recall: " + event.getItems());
-        System.out.println("result: " + event.getResult());
-        System.out.println("tags:" + event.getTags());
+
+        Gson gson = new Gson();
+        System.out.println("recall: " + gson.toJson(event.getItems()));
+        System.out.println("result: " + gson.toJson(event.getResult()));
+        System.out.println("tags: "   + gson.toJson(event.getTags()));
 
         close();
         return;

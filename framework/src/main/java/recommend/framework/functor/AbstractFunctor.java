@@ -30,9 +30,6 @@ public abstract class AbstractFunctor implements Functor {
     public Map<String,Object> userFeatures;//用户特征
     public List<Item> items;//物料
     MetricsReporter metricsReporter;//上报指标
-    int size;//返回结果大小
-    Object result;//算子返回结果
-
 
     @Override
     public void open(FunctorConfig config) {
@@ -60,7 +57,7 @@ public abstract class AbstractFunctor implements Functor {
         try {
             init();
             code = doInvoke(event);
-            metricsReporter.metrics(startTime, code, getSize(), getMetricName());
+            metricsReporter.metrics(startTime, code, event.getSize(), getMetricName());
 
             //System.out.println(event.getItems());
         } catch (Exception e) {
@@ -77,18 +74,6 @@ public abstract class AbstractFunctor implements Functor {
     @Override
     public void close() {
 
-    }
-
-    @Override
-    public <T> T getResult() {
-        return (T) result;
-    }
-
-    public void setResult(Object obj) {
-        result = obj;
-        if (obj instanceof List) {
-            size = ((List)obj).size();
-        }
     }
 
     enum Type {

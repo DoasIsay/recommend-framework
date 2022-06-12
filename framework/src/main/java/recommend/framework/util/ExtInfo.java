@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class ExtInfo {
     @Getter
-    public Map<String, Object> config = new HashMap<>();
+    public transient Map<String, Object> config = new HashMap<>();
     public <T> void setValue(String name, T var) {
         config.put(name, var);
     }

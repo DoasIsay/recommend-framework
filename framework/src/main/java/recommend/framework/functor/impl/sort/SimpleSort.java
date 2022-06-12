@@ -17,7 +17,11 @@ public class SimpleSort extends AbstractSort {
     @Override
     public List<Item> sort(List<Item> items) {
         System.out.println(getName() + " " + this.getClass().getClassLoader());
-        Collections.sort(items, Comparator.comparing(Item::getScore,Comparator.reverseOrder()));
+        items.forEach(item -> {
+            item.setSortQ((float) Math.random());
+        });
+
+        Collections.sort(items, Comparator.comparing(Item::getOrigQ,Comparator.reverseOrder()));
         return items;
     }
 }

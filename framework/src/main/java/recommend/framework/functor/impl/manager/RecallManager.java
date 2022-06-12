@@ -32,19 +32,13 @@ public class RecallManager extends AbstractManager {
             recallTasks.add(() -> functor.invoke(event));
         });
 
-        int idx = 0;
-        List<Item> result = new ArrayList<>();
         try {
             List<Future<Integer>> futures = threadPool.invokeAll(recallTasks, timeout, TimeUnit.MILLISECONDS);
             for (Future<Integer> future: futures) {
-                if (future.isDone() && future.get() >= 0) {
-                    result.addAll(functors.get(idx++).getResult());
-                }
+                future.get();
             }
-            event.setItems(result);
             return 0;
         } catch (Exception e) {
-            System.out.println("invoke "+ functors.get(idx).getClass());
             e.printStackTrace();
         }
 

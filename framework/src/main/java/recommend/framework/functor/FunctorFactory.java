@@ -1,6 +1,5 @@
 package recommend.framework.functor;
 
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ctrip.framework.apollo.ConfigFile;

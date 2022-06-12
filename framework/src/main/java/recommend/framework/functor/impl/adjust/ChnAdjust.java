@@ -25,10 +25,10 @@ public class ChnAdjust extends AbstractAdjust {
     }
 
     @Override
-    public Item adjust(Item item) {
+    public float adjust(Item item) {
         if (chn.contains(item.getChn())) {
-            item.setScore(item.getScore() + weight);
+            item.setAdjQ(item.getAdjQ() + weight);
         }
-        return item;
+        return weight;
     }
 }

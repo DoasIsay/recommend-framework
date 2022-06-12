@@ -9,8 +9,6 @@ import recommend.framework.Event;
 import recommend.framework.Item;
 import recommend.framework.config.FunctorConfig;
 
-import java.util.stream.Collectors;
-
 @Data
 public abstract class AbstractAdjust extends AbstractFunctor {
     @Override
@@ -19,19 +17,20 @@ public abstract class AbstractAdjust extends AbstractFunctor {
         super.open(config);
     }
 
-    public abstract Item adjust(Item item);
+    public abstract float adjust(Item item);
 
     @Override
     public int doInvoke(Event event) {
-        event.setItems(getItems().stream().map(item -> {
-            float score = item.getScore();
-            Item tmp = adjust(item);
+        items.forEach(item -> {
+            float oldQ = item.getAdjQ();
+            float weight = adjust(item);
+            float newQ = item.getAdjQ();
 
-            if (score != tmp.getScore()) {
-                //todo: 记录调权日志
+            if (oldQ != newQ) {
+                item.addAdjust(getName(), weight);
             }
-            return tmp;
-        }).collect(Collectors.toList()));
+        });
+
         return 0;
     }
 }

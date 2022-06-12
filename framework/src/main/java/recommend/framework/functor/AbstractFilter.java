@@ -27,6 +27,7 @@ public abstract class AbstractFilter extends AbstractFunctor {
             //todo:记寻过滤日志
             //metricsReporter.counter(size - event.getSize(), "size", getMetricName());
         }
+
         return 0;
     }
 }

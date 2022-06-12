@@ -17,6 +17,4 @@ public interface Functor {
     void setName(String name);
 
     String getName();
-
-    <T> T getResult();
 }
