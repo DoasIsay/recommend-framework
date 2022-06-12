@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 @Functor(name = "RecallManager")
 public class RecallManager extends AbstractManager {
-
     @Override
     public int doInvokeParallel(Event event) {
         FilterManager filterManager = new FilterManager();

@@ -27,7 +27,7 @@ public abstract class AbstractManager extends AbstractFunctor {
     //manager管理的算子运行模式
     Mode mode = Mode.serial;
     public int timeout;
-    static Map<String, ThreadPoolExecutor> threadPoolMap = new ConcurrentHashMap<>();
+    public static Map<String, ThreadPoolExecutor> threadPoolMap = new ConcurrentHashMap<>();
     public ThreadPoolExecutor threadPool;
 
     @Override
@@ -36,7 +36,8 @@ public abstract class AbstractManager extends AbstractFunctor {
         super.open(config);
         timeout = config.getValue("timeout", 60);
         mode = Mode.valueOf(config.getString("mode", Mode.serial.name()));
-        threadPool = ThreadPoolHelper.get(getType() + "-" + getName(), 8, 64, 0);
+        String k = getType() + "-" + getName();
+        threadPool = threadPoolMap.computeIfAbsent(k, v -> ThreadPoolHelper.get(k, 8, 64, 0));
     }
 
     public boolean strategyFilter(ExpParam expParam) {

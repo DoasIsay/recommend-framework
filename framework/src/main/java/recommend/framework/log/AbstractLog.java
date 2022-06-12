@@ -15,11 +15,10 @@ import recommend.framework.util.KafkaHelper;
  */
 @Slf4j
 public abstract class AbstractLog implements Log, Runnable {
-    static final Logger logDumper = Logger.getLogger("logDump");
-    static KafkaProducer<String, String> kafkaProducer = KafkaHelper.get("logDump");
+    static final Logger diskLogDumper = Logger.getLogger("logDump");
+    static KafkaProducer<String, String> kafkaLogDumper = KafkaHelper.get("logDump");
     static final String SPLIT = "${sp}";
     String resId;
-
     public Event event;
 
     @Getter
@@ -56,9 +55,9 @@ public abstract class AbstractLog implements Log, Runnable {
     public final void log() {
         String logStr = getLogStr();
         if ("disk".equals(type)) {
-            logDumper.info(logStr);
+            diskLogDumper.info(logStr);
         } else if ("kafka".equals(type)) {
-            kafkaProducer.send(new ProducerRecord("logDump", logStr));
+            kafkaLogDumper.send(new ProducerRecord("logDump", logStr));
         }
     }
 

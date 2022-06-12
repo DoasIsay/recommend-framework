@@ -11,11 +11,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public class LogManager {
     static final ThreadPoolExecutor threadPool = ThreadPoolHelper.get("LogDumper", 1, 4, 0);
-    ConcurrentHashMap<Class, AbstractLog> logMap = new ConcurrentHashMap();
+    ConcurrentHashMap<Class, AbstractLog> logMap;
     Event event;
 
     public LogManager(Event event) {
         this.event = event;
+        logMap = new ConcurrentHashMap();
     }
 
     public <T> T get(Class<T> tClass) {
@@ -38,5 +39,9 @@ public class LogManager {
                 abstractLog.run();
             }
         });
+    }
+
+    public static void close() {
+        ThreadPoolHelper.close(threadPool);
     }
 }

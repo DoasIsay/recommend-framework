@@ -1,5 +1,5 @@
 package recommend.framework.rulengine;
 
 public interface RuleEngine {
-    Object execute(String express, Object obj);
+    <T> T execute(String express, Object obj);
 }

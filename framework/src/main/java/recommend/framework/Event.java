@@ -3,6 +3,7 @@ package recommend.framework;
 import lombok.Data;
 import recommend.framework.log.LogManager;
 import recommend.framework.util.ExtInfo;
+import recommend.framework.util.Lazy;
 
 import java.util.List;
 import java.util.Map;
@@ -93,11 +94,14 @@ public final class Event extends ExtInfo {
         return (T) userFeatures.getOrDefault(name, defVar);
     }
 
-    LogManager logManager;
+    Lazy<LogManager> logManager;
+    public LogManager getLogManager() {
+        return logManager.get();
+    }
 
     public Event(boolean init) {
         if (init) {
-            logManager = new LogManager(this);
+            logManager = new Lazy<>(() -> new LogManager(this));
             userFeatures = new ConcurrentHashMap<>();
             tags = new ConcurrentSkipListSet<>();
         }

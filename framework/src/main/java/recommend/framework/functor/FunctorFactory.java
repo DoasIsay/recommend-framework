@@ -36,9 +36,11 @@ public class FunctorFactory {
 
     static volatile List<FunctorConfig> functors;
 
+    static FileMonitor fileMonitor;
+
     static {
         ConfigManager.register("functor", ConfigFileFormat.JSON, FunctorFactory::load);
-        new FileMonitor("F:\\xiewenwu\\recommend-framework\\target\\", (String path)->path.endsWith(".jar"), (File file)->load(file));
+        fileMonitor = new FileMonitor("F:\\xiewenwu\\recommend-framework\\target\\", (String path)->path.endsWith(".jar"), (File file)->load(file));
     }
 
     public FunctorFactory() {
@@ -91,5 +93,9 @@ public class FunctorFactory {
 
     public static FunctorConfig getConfig(String name) {
         return name2Config.get(name);
+    }
+
+    public static void close() {
+        fileMonitor.close();
     }
 }

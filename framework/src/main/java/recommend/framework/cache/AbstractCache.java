@@ -55,4 +55,8 @@ public abstract class AbstractCache implements Runnable {
     public void stop() {
         future.cancel(true);
     }
+
+    public static void close() {
+        scheduleExecutor.shutdown();
+    }
 }

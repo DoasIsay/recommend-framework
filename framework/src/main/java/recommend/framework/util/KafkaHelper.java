@@ -45,4 +45,8 @@ public class KafkaHelper {
 
         return null;
     }
+
+    public static void close() {
+        kafkaMap.values().forEach(KafkaProducer::close);
+    }
 }

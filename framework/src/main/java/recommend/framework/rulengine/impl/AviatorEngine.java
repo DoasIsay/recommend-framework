@@ -17,8 +17,8 @@ public class AviatorEngine implements RuleEngine {
     public static AviatorEngine getInstance() {return instance;}
 
     @Override
-    public Object execute(String express, Object map) {
-        return AviatorEvaluator.compile(express, true).execute((Map<String,Object>) map);
+    public <T> T execute(String express, Object map) {
+        return (T) AviatorEvaluator.compile(express, true).execute((Map<String,Object>) map);
     }
 
     @Data
@@ -36,6 +36,6 @@ public class AviatorEngine implements RuleEngine {
             }});
         }};
         String express = "c!=nil && c || false";
-        System.out.println(AviatorEngine.getInstance().execute(express, map));
+        System.out.println(java.util.Optional.ofNullable(AviatorEngine.getInstance().execute(express, map)));
     }
 }

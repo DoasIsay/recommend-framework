@@ -27,6 +27,8 @@ public class FileMonitor extends FileAlterationListenerAdaptor {
 
     Consumer<File> fileChangeCallBack;
 
+    FileAlterationMonitor fileMonitor;
+
     public FileMonitor(String path, Predicate<String> filter, Consumer<File> fileChangeCallBack) {
         this.fileChangeCallBack = fileChangeCallBack;
         try {
@@ -38,9 +40,17 @@ public class FileMonitor extends FileAlterationListenerAdaptor {
             });
 
             observer.addListener(this);
-            FileAlterationMonitor fileMonitor = new FileAlterationMonitor(3000,
+            fileMonitor = new FileAlterationMonitor(3000,
                     new FileAlterationObserver[] { observer });
             fileMonitor.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void close() {
+        try {
+            fileMonitor.stop();
         } catch (Exception e) {
             e.printStackTrace();
         }

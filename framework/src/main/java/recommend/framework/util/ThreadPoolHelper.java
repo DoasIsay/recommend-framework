@@ -33,4 +33,21 @@ public class ThreadPoolHelper {
                     }
                 });
     }
+
+    public static void close(ThreadPoolExecutor threadPoolExecutor) {
+        if (threadPoolExecutor == null) {
+            return;
+        }
+
+        while(!threadPoolExecutor.getQueue().isEmpty()) {
+            log.warn("{} not complete, waiting", threadPoolExecutor.toString());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        threadPoolExecutor.shutdown();
+    }
 }

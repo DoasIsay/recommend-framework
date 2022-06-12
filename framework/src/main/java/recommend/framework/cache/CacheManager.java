@@ -8,6 +8,7 @@ import recommend.framework.util.AnnotationHelper;
 import recommend.framework.config.CacheConfig;
 import recommend.framework.config.Config;
 import recommend.framework.config.ConfigManager;
+import recommend.framework.util.JsonHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,12 @@ public class CacheManager {
     }
 
     Config load(ConfigFile configFile) {
-        Config config = ConfigManager.toConfig(configFile);
+        Config config;
+        if (configFile != null) {
+            config = new Config(JsonHelper.fromString(configFile.getContent()));
+        } else {
+            config = new Config("framework/src/cache.json");
+        }
 
         List<CacheConfig> cacheConfigs = config.getList("conf", CacheConfig.class);
         cacheConfigs.forEach(cacheConfig -> {
@@ -99,5 +105,9 @@ public class CacheManager {
 
     static {
         update();
+    }
+
+    public static void close() {
+        AbstractCache.close();
     }
 }

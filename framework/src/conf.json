@@ -49,7 +49,7 @@
       "name": "RecallManager",
       "functor": "RecallManager",
       "comment": "并行召回",
-      "functors": ["SimpleRedis", "PosRecall", "SessionRecall"],
+      "functors": ["SimpleRedis", "SessionRecall", "PosRecall"],
       "config": {
         "open": true,
         "mode": "parallel"
@@ -104,8 +104,7 @@
       "comment": "串行执行，前面算子优先占位，后边算子继续占剩余的位",
       "functors": ["StrongPosition", "ChnPosition", "SimplePosition"],
       "config": {
-        "open": true,
-        "mode": "cutoff"
+        "open": true
       }
     },
     {
