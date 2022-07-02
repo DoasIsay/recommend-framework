@@ -14,7 +14,6 @@ import java.util.Set;
 @Functor(name = "ChnAdjust")
 public class ChnAdjust extends AbstractAdjust {
     public Set<String> chn;
-    public float weight;
 
     @Override
     public void init() {
@@ -25,10 +24,9 @@ public class ChnAdjust extends AbstractAdjust {
     }
 
     @Override
-    public float adjust(Item item) {
+    public void adjust(Item item) {
         if (chn.contains(item.getChn())) {
             item.setAdjQ(item.getAdjQ() + weight);
         }
-        return weight;
     }
 }

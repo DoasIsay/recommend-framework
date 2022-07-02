@@ -18,7 +18,7 @@ public class Item extends ExtInfo {
     Score score;
     //物料详细信息
     transient Object info;
-
+    
     public static Item EMPTY = new Item(null, 0f);
 
     public Item(String id, float score) {

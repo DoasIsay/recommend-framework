@@ -38,7 +38,7 @@
       "name": "TagManager",
       "functor": "Manager",
       "comment": "并行打标签，算子间无依赖",
-      "functors": ["NewOldUserTag"],
+      "functors": ["SimpleTag"],
       "config": {
         "open": true,
         "mode": "parallel"
@@ -162,11 +162,11 @@
     },
     {
       "type": "tag",
-      "name": "NewOldUserTag",
+      "name": "SimpleTag",
       "functor": "ExpressTag",
       "config": {
         "open": true,
-        "tagExpress": "context.age == 0 ? 'NewUser' : 'OldUser'"
+        "tagExpress": "if(context.age==0) {tag.NewUser=true;} if(context.age!=0){tag.OldUser=true;}"
       }
     },
     {
@@ -177,7 +177,7 @@
       "config": {
         "open": true,
         "comment": "规则表达示圏用户",
-        "express": "NewUser!=nil && NewUser",
+        "express": "tag.NewUser!=nil",
         "comment": "种子过滤规则",
         "seedExpress": "dr>10 && views>1 || likes>0 || pay>1"
       }
@@ -221,7 +221,7 @@
       "config": {
         "open": true,
         "comment": "规则表达示圏用户",
-        "express": "highActive == true && 'ios'==os && offset<100"
+        "express": "tag.OldUser!=nil && 'ios'==context.os && context.offset<100"
       }
     },
     {
@@ -253,7 +253,7 @@
         "open": true,
         "chn": "SimpleRedis",
         "comment": "规则表达示圏用户",
-        "express": "lowActive == true"
+        "express": "tag.OldUser!=nil"
       }
     },
     {
@@ -281,7 +281,7 @@
       "config": {
         "open": true,
         "comment": "此算子只有Ios新户生效",
-        "express": "NewUser && context.os == 'ios'"
+        "express": "tag.NewUser!=nil && context.os == 'ios'"
       }
     },
     {

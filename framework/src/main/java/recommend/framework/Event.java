@@ -5,9 +5,10 @@ import recommend.framework.log.LogManager;
 import recommend.framework.util.ExtInfo;
 import recommend.framework.util.Lazy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author xiewenwu
@@ -52,8 +53,14 @@ public final class Event extends ExtInfo {
 
     List<Item> items;//召回物料集
     List<Item> result;//最终返回结果物料集
-    int code = 1;//0返回为空，1成功，-1失败，-2超时，-3任务取消
     int size;//items大小
+
+    public int getSize() {
+        if (items != null) {
+            return items.size();
+        }
+        return 0;
+    }
 
     public void addItems(List<Item> items) {
         synchronized (this.items) {
@@ -63,11 +70,6 @@ public final class Event extends ExtInfo {
 
     public void setItems(List<Item> items) {
         this.items = items;
-    }
-
-    volatile Set<String> tags;
-    public void addTag(String tag) {
-        tags.add(tag);
     }
 
     volatile Map<String, Object> userFeatures;
@@ -105,7 +107,7 @@ public final class Event extends ExtInfo {
             items = new ArrayList<>();
             logManager = new Lazy<>(() -> new LogManager(this));
             userFeatures = new ConcurrentHashMap<>();
-            tags = new ConcurrentSkipListSet<>();
+            userFeatures.put("tag", new ConcurrentHashMap<String, Boolean>());
         }
     }
 

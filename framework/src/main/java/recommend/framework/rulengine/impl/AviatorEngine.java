@@ -1,6 +1,7 @@
 package recommend.framework.rulengine.impl;
 
 import com.googlecode.aviator.AviatorEvaluator;
+import com.googlecode.aviator.Options;
 import lombok.Data;
 import recommend.framework.rulengine.RuleEngine;
 
@@ -14,6 +15,10 @@ import java.util.Map;
 public class AviatorEngine implements RuleEngine {
     private AviatorEngine() {}
     private static AviatorEngine instance = new AviatorEngine();
+    static {
+        AviatorEvaluator.setOption(Options.NIL_WHEN_PROPERTY_NOT_FOUND, true);
+    }
+
     public static AviatorEngine getInstance() {return instance;}
 
     @Override

@@ -34,7 +34,7 @@ public abstract class AbstractManager extends AbstractFunctor {
     public void open(FunctorConfig config) {
         setType(Type.manager);
         super.open(config);
-        timeout = config.getValue("timeout", 60);
+        timeout = config.getValue("timeout", 600);
         mode = Mode.valueOf(config.getString("mode", Mode.serial.name()));
         String k = getType() + "-" + getName();
         threadPool = threadPoolMap.computeIfAbsent(k, v -> ThreadPoolHelper.get(k, 8, 64, 0));

@@ -22,5 +22,6 @@ public class ExpressTag extends AbstractTag {
         }
 
         String tag = RuleEngineFactory.get(expParam.getString("ruleEngine", "aviator")).execute(express, userFeatures);
-        return tag;    }
+        return tag;
+    }
 }

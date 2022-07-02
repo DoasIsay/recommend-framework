@@ -11,22 +11,22 @@ import recommend.framework.config.FunctorConfig;
 
 @Data
 public abstract class AbstractAdjust extends AbstractFunctor {
+    public float weight = 1;
+
     @Override
     public void open(FunctorConfig config) {
         setType(Type.adjust);
         super.open(config);
     }
 
-    public abstract float adjust(Item item);
+    public abstract void adjust(Item item);
 
     @Override
     public int doInvoke(Event event) {
         items.forEach(item -> {
-            float oldQ = item.getAdjQ();
-            float weight = adjust(item);
-            float newQ = item.getAdjQ();
-
-            if (oldQ != newQ) {
+            weight = 1;
+            adjust(item);
+            if (weight != 1) {
                 item.addAdjust(getName(), weight);
             }
         });
